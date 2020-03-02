@@ -20,58 +20,61 @@ class AppPanel(tk.Tk):
 		self.sequences = []
 
 		font_type = ('Tahoma',8,'bold')
+		BG_COLOR = "#212121"
+		LIME = "#76FF03"
 
 		canvas = tk.Canvas(self,height=self.height,width=self.width)
 		canvas.pack()
+		canvas.configure(background=BG_COLOR)
 
 		#ComboBox that is associated with choosing data aquiring method
-		self.combo_box_frame = tk.Frame(self)
+		self.combo_box_frame = tk.Frame(self,bg=BG_COLOR)
 		self.combo_box_frame.place(relx=0.5, rely=0.05, relwidth=0.1, relheight=0.1, anchor='n')
 		self.comboBox = ttk.Combobox(self.combo_box_frame, values=['File', 'Api Request', 'Custom'])
 		self.comboBox.place(relwidth=1,relheight=0.5)
 		self.comboBox.current(1)
 		self.comboBox.bind("<<ComboboxSelected>>",self.cb_selection)
 
-		self.frame = tk.Frame(self,bd=5)
+		self.frame = tk.Frame(self,bd=5,bg=BG_COLOR)
 		self.frame.place(relx=0.5,rely=0.15,relwidth=0.75,relheight=0.1,anchor='n')
 
-		#Widget associated with api request url 
+		#Widgets associated with api request url 
 		self.url_widgets = []
-		self.url_label_1 = tk.Label(self.frame, font=font_type)
+		self.url_label_1 = tk.Label(self.frame, font=font_type,bg=LIME)
 		self.url_label_1.place(relx=0.2, rely=0.1, relwidth=0.3, relheight=0.3, anchor='n')
 		self.url_label_1['text'] = '1st sequence ID:'
 		self.url_entry_1 = tk.Entry(self.frame, font=font_type, bd=1)
 		self.url_entry_1.place(relx=0.2, rely=0.4, relwidth=0.3, relheight=0.4, anchor='n')
 		
-		self.url_label_2 = tk.Label(self.frame, font=font_type)
+		self.url_label_2 = tk.Label(self.frame, font=font_type,bg=LIME)
 		self.url_label_2.place(relx=0.45, rely=0.1, relwidth=0.3, relheight=0.3, anchor='n')
 		self.url_label_2['text'] = '2nd sequence ID:'
 		self.url_entry_2 = tk.Entry(self.frame, font=font_type, bd=1)
 		self.url_entry_2.place(relx=0.45, rely=0.4, relwidth=0.3, relheight=0.4, anchor='n')
 
-		self.url_get_btn = tk.Button(self.frame,text='Request',font=font_type,command=lambda:self.make_request())
+		self.url_get_btn = tk.Button(self.frame,text='Request',font=font_type,bg=LIME,command=lambda:self.make_request())
 		self.url_get_btn.place(relx=0.8,rely=0.4,relwidth=0.15,relheight=0.4,anchor='n')
 
 		self.url_widgets.extend([self.url_label_1,self.url_label_2,self.url_entry_1,self.url_entry_2,self.url_get_btn])
 
 
 		#Button that opens filechooser dialog
-		self.filechooser_btn = tk.Button(self.frame,text='Read File',font=font_type,command=lambda:self.read_file())
+		self.filechooser_btn = tk.Button(self.frame,text='Read File',bg=LIME,font=font_type,command=lambda:self.read_file())
 		# self.filechooser_btn.place(relx=0.5,rely=0.3,relwidth=0.15,relheight=0.4,anchor='n')
 
 		#Custom sequences entries
-		self.first_seq_label = tk.Label(self.frame,font=font_type)
+		self.first_seq_label = tk.Label(self.frame,font=font_type,bg=LIME)
 		self.first_seq_label['text'] = 'First Sequence'
 		self.first_seq_entry = tk.Entry(self.frame,font=font_type)
-		self.second_seq_label = tk.Label(self.frame,font=font_type)
+		self.second_seq_label = tk.Label(self.frame,font=font_type,bg=LIME)
 		self.second_seq_label['text'] = 'Second Sequence'
 		self.second_seq_entry = tk.Entry(self.frame,font=font_type)
-		self.custom_seq_btn = tk.Button(self.frame,text='Pass Sequences',font=font_type,command=lambda:self.load_custom_seq())
+		self.custom_seq_btn = tk.Button(self.frame,text='Pass Sequences',bg=LIME,font=font_type,command=lambda:self.load_custom_seq())
 		self.custom_seq_widgets = []
 		self.custom_seq_widgets.extend([self.first_seq_label,self.first_seq_entry,self.second_seq_label,self.second_seq_entry,self.custom_seq_btn])
 
 		#Chart Frame 
-		self.chart_frame = tk.Frame(self,bd=5)
+		self.chart_frame = tk.Frame(self,bd=5,bg=BG_COLOR)
 		self.chart_frame.place(relx=0.5,rely=0.3,relwidth=0.5,relheight=0.5,anchor='n')
 		figure= plt.Figure(figsize=(20,20),dpi=100)
 		ax = figure.add_subplot(111)
@@ -79,9 +82,9 @@ class AppPanel(tk.Tk):
 		self.chart_type.get_tk_widget().pack()
 		
 		#Plot Button 
-		self.plot_btn_frame = tk.Frame(self)
+		self.plot_btn_frame = tk.Frame(self,bg=BG_COLOR)
 		self.plot_btn_frame.place(relx=0.5,rely=0.8,relwidth=0.75,relheight=0.1,anchor='n')
-		self.plot_btn = tk.Button(self.plot_btn_frame,font=font_type,text='Plot',command=lambda:self.plot())
+		self.plot_btn = tk.Button(self.plot_btn_frame,bg=LIME,font=font_type,text='Plot',command=lambda:self.plot())
 		self.plot_btn.place(relx=0.5,rely=0.7,relwidth=0.2,relheight=0.3,anchor='n')
 
 
@@ -179,8 +182,6 @@ class AppPanel(tk.Tk):
 			self.url_entry_2.place(relx=0.45, rely=0.4, relwidth=0.3, relheight=0.4, anchor='n')
 			self.url_get_btn.place(relx=0.8,rely=0.4,relwidth=0.15,relheight=0.4,anchor='n')
 
-			for item in self.url_widgets:
-				print(item)
 
 		elif(self.comboBox.current()==2):
 
