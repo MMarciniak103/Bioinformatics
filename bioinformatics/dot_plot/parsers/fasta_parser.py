@@ -1,4 +1,5 @@
 from data_structures.fasta import FastaSequence
+from collections import OrderedDict
 import re 
 
 class FastaParser:
@@ -11,33 +12,29 @@ class FastaParser:
 		:param content: Sequence string in fasta format
 		:return: list of FastaSequence Objects.
 		"""
-		new_seq = True
-		start_reading = False
-		# seq_name = ''
+
+		#Iterate over string content and parse sequences
+		#Save them temporaly in OrderedDict
+		seq_id = None
 		seq_string = ''
-		content_len = len(content)
-		for i,line in enumerate(content):
+		seqs = OrderedDict()
+		for line in content:
+			if line.startswith('>'):
+				if seq_id is not None:
+					seqs[seq_id] = seq_string
+				seq_id = line[1:].strip()
+			else:
+				seq_string +=line.strip()
 
-			#Check if its already another one sequention and save the previous one
-			if len(line) > 1:
-				if line[0] == '>':
-					new_seq = True
-					if len(seq_string) != 0:
-						sequence.set_sequence(re.sub(r"\s+", "", seq_string, flags=re.UNICODE))
-						self.sequences.append(sequence)
+		seqs[seq_id] = seq_string
 
-			if new_seq:
-				sequence = FastaSequence(line)
-				seq_string = ''
-				new_seq = False
-				continue
-				
-			#Check if it is end of an content list		
-			if i == content_len-1:
-				sequence.set_sequence(re.sub(r"\s+", "", seq_string, flags=re.UNICODE))
-				self.sequences.append(sequence)
-			seq_string +=line
+		#Iterate over parsed sequences and map them into FastaSequence Objects
+		for k,v in seqs.items():
+			sequence = FastaSequence(k)
+			sequence.set_sequence(re.sub(r"\s+", "", v, flags=re.UNICODE))
+			self.sequences.append(sequence)
 
+		#Check if there was exactly 2 sequences, if no then throw an exception
 		if len(self.sequences) != 2:
 			raise InvalidSequenceException("REQUIERED 2 SEQUENCES!")
 
