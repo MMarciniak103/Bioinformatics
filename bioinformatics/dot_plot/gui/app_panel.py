@@ -4,7 +4,7 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
-from parsers.fasta_parser import FastaParser,InvalidSequenceException
+from parsers.fasta_parser import FastaParser,InvalidSequenceException,InvalidCharsInSequenceException
 from data_structures.fasta import FastaSequence
 from api_connector.connector import APIConnector
 import re 
@@ -151,9 +151,31 @@ class AppPanel(tk.Tk):
 		first_seq_fasta.set_sequence(re.sub(r"\s+","",first_seq,flags=re.UNICODE))
 		second_seq_fasta.set_sequence(re.sub(r"\s+","",second_seq,flags=re.UNICODE))
 
+		first_seq_set = set(list(first_seq_fasta.get_sequence()))
+		second_seq_set = set(list(second_seq_fasta.get_sequence()))
+
+		#Validate User Input - Check if it contains only A,C,T,G chars
+		if len(first_seq_set) > 4 or len(second_seq_set) > 4:
+			tk.messagebox.showerror("ERROR", "Allowed only chars: A,T,C,G !")
+			return
+		for char in first_seq_set:
+			try:
+				self.validate_char(char)
+			except InvalidCharsInSequenceException:
+				tk.messagebox.showerror("ERROR", "Allowed only chars: A,T,C,G !")
+				return
+		for char in second_seq_set:
+			try:
+				self.validate_char(char)
+			except InvalidCharsInSequenceException:
+				tk.messagebox.showerror("ERROR", "Allowed only chars: A,T,C,G !")
+				return 
+
 		self.sequences = [first_seq_fasta,second_seq_fasta]
 
-
+	def validate_char(self,char):
+		if char not in ['A','T','C','G']:
+			raise InvalidCharsInSequenceException('Only A,T,C,G are allowed !')
 
 	def cb_selection(self,event):
 		"""

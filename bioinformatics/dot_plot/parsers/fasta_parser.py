@@ -45,3 +45,7 @@ class FastaParser:
 class InvalidSequenceException(Exception):
 	def __init__(self,message):
 		super().__init__(message)
+
+class InvalidCharsInSequenceException(Exception):
+	def __init__(self,message):
+		super().__init__(message)
