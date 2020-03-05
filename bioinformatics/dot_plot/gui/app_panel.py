@@ -2,17 +2,17 @@ import tkinter as tk
 from tkinter.filedialog import askopenfilename
 from tkinter import ttk
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
 from parsers.fasta_parser import FastaParser,InvalidSequenceException,InvalidCharsInSequenceException
 from data_structures.fasta import FastaSequence
 from api_connector.connector import APIConnector
+from dot_plot_algorithm.dot_plot_impl import  DotPlot
 import re 
 
 class AppPanel(tk.Tk):
 
 
-	def __init__(self,height=800,width=1000,*args,**kwargs):
+	def __init__(self,height=700,width=600,*args,**kwargs):
 		tk.Tk.__init__(self,*args,**kwargs)
 		self.height = height
 		self.width = width
@@ -29,31 +29,31 @@ class AppPanel(tk.Tk):
 
 		#ComboBox that is associated with choosing data aquiring method
 		self.combo_box_frame = tk.Frame(self,bg=BG_COLOR)
-		self.combo_box_frame.place(relx=0.5, rely=0.05, relwidth=0.1, relheight=0.1, anchor='n')
+		self.combo_box_frame.place(relx=0.5, rely=0.05, relwidth=0.3, relheight=0.1, anchor='n')
 		self.comboBox = ttk.Combobox(self.combo_box_frame, values=['File', 'Api Request', 'Custom'])
 		self.comboBox.place(relwidth=1,relheight=0.5)
 		self.comboBox.current(1)
 		self.comboBox.bind("<<ComboboxSelected>>",self.cb_selection)
 
 		self.frame = tk.Frame(self,bd=5,bg=BG_COLOR)
-		self.frame.place(relx=0.5,rely=0.15,relwidth=0.75,relheight=0.1,anchor='n')
+		self.frame.place(relx=0.5,rely=0.15,relwidth=0.75,relheight=0.75,anchor='n')
 
 		#Widgets associated with api request url 
 		self.url_widgets = []
 		self.url_label_1 = tk.Label(self.frame, font=font_type,bg=LIME)
-		self.url_label_1.place(relx=0.2, rely=0.1, relwidth=0.3, relheight=0.3, anchor='n')
+		self.url_label_1.place(relx=0.5, rely=0.2, relwidth=0.5, relheight=0.05, anchor='n')
 		self.url_label_1['text'] = '1st sequence ID:'
 		self.url_entry_1 = tk.Entry(self.frame, font=font_type, bd=1)
-		self.url_entry_1.place(relx=0.2, rely=0.4, relwidth=0.3, relheight=0.4, anchor='n')
+		self.url_entry_1.place(relx=0.5, rely=0.25, relwidth=0.5, relheight=0.1, anchor='n')
 		
 		self.url_label_2 = tk.Label(self.frame, font=font_type,bg=LIME)
-		self.url_label_2.place(relx=0.45, rely=0.1, relwidth=0.3, relheight=0.3, anchor='n')
+		self.url_label_2.place(relx=0.5, rely=0.4, relwidth=0.5, relheight=0.05, anchor='n')
 		self.url_label_2['text'] = '2nd sequence ID:'
 		self.url_entry_2 = tk.Entry(self.frame, font=font_type, bd=1)
-		self.url_entry_2.place(relx=0.45, rely=0.4, relwidth=0.3, relheight=0.4, anchor='n')
+		self.url_entry_2.place(relx=0.5, rely=0.45, relwidth=0.5, relheight=0.1, anchor='n')
 
 		self.url_get_btn = tk.Button(self.frame,text='Request',font=font_type,bg=LIME,command=lambda:self.make_request())
-		self.url_get_btn.place(relx=0.8,rely=0.4,relwidth=0.15,relheight=0.4,anchor='n')
+		self.url_get_btn.place(relx=0.5,rely=0.6,relwidth=0.4,relheight=0.1,anchor='n')
 
 		self.url_widgets.extend([self.url_label_1,self.url_label_2,self.url_entry_1,self.url_entry_2,self.url_get_btn])
 
@@ -75,22 +75,44 @@ class AppPanel(tk.Tk):
 
 		#Chart Frame 
 		self.chart_frame = tk.Frame(self,bd=5,bg=BG_COLOR)
-		self.chart_frame.place(relx=0.5,rely=0.3,relwidth=0.5,relheight=0.5,anchor='n')
-		figure= plt.Figure(figsize=(20,20),dpi=100)
-		ax = figure.add_subplot(111)
-		self.chart_type = FigureCanvasTkAgg(figure,self.chart_frame)
-		self.chart_type.get_tk_widget().pack()
+		self.figure= plt.Figure(dpi=100)
+		self.ax = self.figure.add_subplot(111)
+        #
 		
 		#Plot Button 
 		self.plot_btn_frame = tk.Frame(self,bg=BG_COLOR)
-		self.plot_btn_frame.place(relx=0.5,rely=0.8,relwidth=0.75,relheight=0.1,anchor='n')
+		self.plot_btn_frame.place(relx=0.5,rely=0.75,relwidth=0.90,relheight=0.2,anchor='n')
 		self.plot_btn = tk.Button(self.plot_btn_frame,bg=LIME,font=font_type,text='Plot',command=lambda:self.plot())
-		self.plot_btn.place(relx=0.5,rely=0.7,relwidth=0.2,relheight=0.3,anchor='n')
+		self.plot_btn.place(relx=0.5,rely=0.35,relwidth=0.2,relheight=0.2,anchor='n')
+		self.var1 = tk.IntVar()
+		self.windowed_check_box =tk.Checkbutton(self.plot_btn_frame, text="use window", variable=self.var1,onvalue=1,offvalue=0,command=lambda:self.show_window_widgets())
+		self.windowed_check_box.place(relx=0.85,rely=0.4,relwidth=0.2,relheight=0.3,anchor='n')
 
+		#Window size and threshold values widgets
+		self.window_size_label = tk.Label(self.plot_btn_frame,font=font_type,bg=LIME)
+		self.window_size_label['text'] = 'Window size'
+		self.window_size_entry = tk.Entry(self.plot_btn_frame,font=font_type)
+
+		self.threshold_label = tk.Label(self.plot_btn_frame,font=font_type,bg=LIME)
+		self.threshold_label['text'] = 'Threshold'
+		self.threshold_entry = tk.Entry(self.plot_btn_frame,font=font_type)
+
+		self.window_widgets = []
+		self.window_widgets.extend([self.window_size_label,self.window_size_entry,self.threshold_label,self.threshold_entry])
+
+	def show_window_widgets(self):
+		if(self.var1.get()==1):
+			self.window_size_label.place(relx=0.05, rely=0.3, relheight=0.1, relwidth=0.2)
+			self.window_size_entry.place(relx=0.05, rely=0.4, relheight=0.2, relwidth=0.2)
+			self.threshold_label.place(relx=0.05,rely=0.65,relheight=0.1,relwidth=0.2)
+			self.threshold_entry.place(relx=0.05,rely=0.75,relheight=0.2,relwidth=0.2)
+		else:
+			for item in self.window_widgets:
+				self._hide(item)
 
 	def plot(self):
-		print(len(self.sequences))
 
+		plt.close('all')
 		if len(self.sequences) !=2 :
 			tk.messagebox.showerror("ERROR","Requiered 2 sequences!")
 
@@ -98,6 +120,26 @@ class AppPanel(tk.Tk):
 			if sequence.get_sequence()  == '':
 				tk.messagebox.showerror("ERROR","Requiered 2 sequences!")
 
+		dot_plot_manager = DotPlot(self.sequences)
+		matrix = dot_plot_manager.make_dot_plot()
+		if self.var1.get() == 1:
+			window_size = self.window_size_entry.get()
+			window_threshold = self.threshold_entry.get()
+			if window_size=='' or window_threshold=='':
+				tk.messagebox.showerror('ERROR','Provide window size and threshold level!')
+				return
+			windowed = dot_plot_manager.run_window(matrix,K = int(window_size),S = int(window_threshold))
+			fig2 = plt.figure()
+			plt.imshow(windowed,cmap='binary')
+			plt.title(f'Window size = {window_size} and threshold = {window_threshold}')
+			plt.xlabel(self.sequences[0].get_sequence_name())
+			plt.ylabel(self.sequences[1].get_sequence_name())
+		fig  = plt.figure()
+		plt.title('Dot Plot')
+		plt.imshow(matrix,cmap='binary')
+		plt.xlabel(self.sequences[0].get_sequence_name())
+		plt.ylabel(self.sequences[1].get_sequence_name())
+		plt.show()
 
 	def read_file(self):
 		"""
@@ -190,7 +232,7 @@ class AppPanel(tk.Tk):
 			for item in self.url_widgets:
 				self._hide(item)
 
-			self.filechooser_btn.place(relx=0.5,rely=0.3,relwidth=0.15,relheight=0.4,anchor='n')
+			self.filechooser_btn.place(relx=0.5,rely=0.3,relwidth=0.5,relheight=0.1,anchor='n')
 
 		elif(self.comboBox.current()==1):
 			self._hide(self.filechooser_btn)
@@ -198,11 +240,11 @@ class AppPanel(tk.Tk):
 			for item in self.custom_seq_widgets:
 				self._hide(item)
 
-			self.url_label_1.place(relx=0.2, rely=0.1, relwidth=0.3, relheight=0.3, anchor='n')
-			self.url_entry_1.place(relx=0.2, rely=0.4, relwidth=0.3, relheight=0.4, anchor='n')
-			self.url_label_2.place(relx=0.45, rely=0.1, relwidth=0.3, relheight=0.3, anchor='n')
-			self.url_entry_2.place(relx=0.45, rely=0.4, relwidth=0.3, relheight=0.4, anchor='n')
-			self.url_get_btn.place(relx=0.8,rely=0.4,relwidth=0.15,relheight=0.4,anchor='n')
+			self.url_label_1.place(relx=0.5, rely=0.2, relwidth=0.5, relheight=0.05, anchor='n')
+			self.url_entry_1.place(relx=0.5, rely=0.25, relwidth=0.5, relheight=0.1, anchor='n')
+			self.url_label_2.place(relx=0.5, rely=0.4, relwidth=0.5, relheight=0.05, anchor='n')
+			self.url_entry_2.place(relx=0.5, rely=0.45, relwidth=0.5, relheight=0.1, anchor='n')
+			self.url_get_btn.place(relx=0.5, rely=0.6, relwidth=0.4, relheight=0.1, anchor='n')
 
 
 		elif(self.comboBox.current()==2):
@@ -212,10 +254,10 @@ class AppPanel(tk.Tk):
 
 			self._hide(self.filechooser_btn)
 
-			self.first_seq_entry.place(relx=0.2,rely=0.4,relwidth=0.4,relheight=0.4,anchor='n')
-			self.first_seq_label.place(relx=0.2,rely=0.1,relwidth=0.3,relheight=0.3,anchor='n')
+			self.first_seq_entry.place(relx=0.5,rely=0.25,relwidth=0.9,relheight=0.1,anchor='n')
+			self.first_seq_label.place(relx=0.5,rely=0.20,relwidth=0.9,relheight=0.05,anchor='n')
 
-			self.second_seq_entry.place(relx=0.8,rely=0.4,relwidth=0.4,relheight=0.4,anchor='n')
-			self.second_seq_label.place(relx=0.8,rely=0.1,relwidth=0.3,relheight=0.3,anchor='n')
+			self.second_seq_entry.place(relx=0.5,rely=0.45,relwidth=0.9,relheight=0.1,anchor='n')
+			self.second_seq_label.place(relx=0.5,rely=0.4,relwidth=0.9,relheight=0.05,anchor='n')
 
-			self.custom_seq_btn.place(relx=0.5,rely=0.5,relwidth=0.2,relheight=0.4,anchor='n')
+			self.custom_seq_btn.place(relx=0.5,rely=0.6,relwidth=0.4,relheight=0.1,anchor='n')

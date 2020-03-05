@@ -1,6 +1,5 @@
 from data_structures.fasta import FastaSequence
-from collections import OrderedDict
-import re 
+import re
 
 class FastaParser:
 	def __init__(self):
@@ -14,24 +13,27 @@ class FastaParser:
 		"""
 
 		#Iterate over string content and parse sequences
-		#Save them temporaly in OrderedDict
+		#Save them temporaly in list
 		seq_id = None
 		seq_string = ''
-		seqs = OrderedDict()
+		seqs = []
 		for line in content:
 			if line.startswith('>'):
 				if seq_id is not None:
-					seqs[seq_id] = seq_string
+					seqs.append([seq_id,seq_string])
 				seq_id = line[1:].strip()
+				seq_string = ''
+
 			else:
 				seq_string +=line.strip()
 
-		seqs[seq_id] = seq_string
+		seqs.append([seq_id,seq_string])
 
 		#Iterate over parsed sequences and map them into FastaSequence Objects
-		for k,v in seqs.items():
-			sequence = FastaSequence(k)
-			sequence.set_sequence(re.sub(r"\s+", "", v, flags=re.UNICODE))
+		for sequence in seqs:
+			seq_name,seq_string = sequence
+			sequence = FastaSequence(seq_name)
+			sequence.set_sequence(re.sub(r"\s+", "", seq_string, flags=re.UNICODE))
 			self.sequences.append(sequence)
 
 		#Check if there was exactly 2 sequences, if no then throw an exception

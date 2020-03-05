@@ -9,6 +9,9 @@ class FastaSequence:
 	def set_sequence(self,sequence):
 		self.sequence.append(sequence)
 
+	def get_sequence_name(self):
+		return self.name
+
 	def get_sequence_length(self):
 		return len(self.sequence)
 
