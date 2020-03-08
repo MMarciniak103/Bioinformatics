@@ -2,12 +2,12 @@ import tkinter as tk
 from tkinter.filedialog import askopenfilename
 from tkinter import ttk
 import matplotlib.pyplot as plt
-import pandas as pd
 from parsers.fasta_parser import FastaParser,InvalidSequenceException,InvalidCharsInSequenceException
 from data_structures.fasta import FastaSequence
 from api_connector.connector import APIConnector
 from dot_plot_algorithm.dot_plot_impl import  DotPlot
 import re 
+from textwrap import wrap
 
 class AppPanel(tk.Tk):
 
@@ -36,10 +36,15 @@ class AppPanel(tk.Tk):
 		self.comboBox.bind("<<ComboboxSelected>>",self.cb_selection)
 
 		self.frame = tk.Frame(self,bd=5,bg=BG_COLOR)
-		self.frame.place(relx=0.5,rely=0.15,relwidth=0.75,relheight=0.75,anchor='n')
+		self.frame.place(relx=0.5,rely=0.10,relwidth=0.75,relheight=0.85,anchor='n')
 
 		#Widgets associated with api request url 
 		self.url_widgets = []
+		self.url_label_3 = tk.Label(self.frame,font=font_type,bg=LIME)
+		self.url_label_3.place(relx=0.5,rely=0.05,relwidth=0.5,relheight=0.05,anchor='n')
+		self.url_label_3['text'] = 'DB type:'
+		self.url_entry_3 = tk.Entry(self.frame,font=font_type,bd=1)
+		self.url_entry_3.place(relx=0.5,rely=0.1,relwidth=0.5,relheight=0.075,anchor='n')
 		self.url_label_1 = tk.Label(self.frame, font=font_type,bg=LIME)
 		self.url_label_1.place(relx=0.5, rely=0.2, relwidth=0.5, relheight=0.05, anchor='n')
 		self.url_label_1['text'] = '1st sequence ID:'
@@ -55,7 +60,7 @@ class AppPanel(tk.Tk):
 		self.url_get_btn = tk.Button(self.frame,text='Request',font=font_type,bg=LIME,command=lambda:self.make_request())
 		self.url_get_btn.place(relx=0.5,rely=0.6,relwidth=0.4,relheight=0.1,anchor='n')
 
-		self.url_widgets.extend([self.url_label_1,self.url_label_2,self.url_entry_1,self.url_entry_2,self.url_get_btn])
+		self.url_widgets.extend([self.url_label_1,self.url_label_2,self.url_entry_1,self.url_entry_2,self.url_get_btn,self.url_entry_3,self.url_label_3])
 
 
 		#Button that opens filechooser dialog
@@ -132,13 +137,14 @@ class AppPanel(tk.Tk):
 			fig2 = plt.figure()
 			plt.imshow(windowed,cmap='binary')
 			plt.title(f'Window size = {window_size} and threshold = {window_threshold}')
-			plt.xlabel(self.sequences[0].get_sequence_name())
-			plt.ylabel(self.sequences[1].get_sequence_name())
+			plt.xlabel('\n'.join(wrap(self.sequences[0].get_sequence_name(),50)))
+			plt.ylabel('\n'.join(wrap(self.sequences[1].get_sequence_name(), 50)))
 		fig  = plt.figure()
 		plt.title('Dot Plot')
 		plt.imshow(matrix,cmap='binary')
-		plt.xlabel(self.sequences[0].get_sequence_name())
-		plt.ylabel(self.sequences[1].get_sequence_name())
+		plt.xlabel('\n'.join(wrap(self.sequences[0].get_sequence_name(),50)))
+		plt.ylabel('\n'.join(wrap(self.sequences[1].get_sequence_name(),50)))
+		fig.tight_layout()
 		plt.show()
 
 	def read_file(self):
@@ -146,7 +152,7 @@ class AppPanel(tk.Tk):
 		Method that reads selected file content and prepocess it before passing it to parser object.Selected item must be in fasta format.
 		:return:
 		"""
-		filename = askopenfilename()
+		filename = askopenfilename(filetypes=[("FASTA files","*.fasta")])
 		if filename:
 			if filename[-5:] != 'fasta':
 				tk.messagebox.showerror("ERROR","Requiered FASTA file!")
@@ -168,11 +174,15 @@ class AppPanel(tk.Tk):
 
 	def make_request(self):
 		"""
-		Method that enables connection to API of  ncbi database and requests data for a given pair of id.
+		Method that enables connection to API of  ncbi database and requests data for a given pair of id and db type.
+		Default db type is nuccore
 		"""
 		api_conn = APIConnector()
 
-		url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={self.url_entry_1.get()},{self.url_entry_2.get()}&rettype=fasta&retmode=text"
+		db_type = self.url_entry_3.get()
+		if db_type == '':
+			db_type = 'nuccore'
+		url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db={db_type}&id={self.url_entry_1.get()},{self.url_entry_2.get()}&rettype=fasta&retmode=text"
 
 		self.sequences = api_conn.request(url)
 		
@@ -211,7 +221,7 @@ class AppPanel(tk.Tk):
 				self.validate_char(char)
 			except InvalidCharsInSequenceException:
 				tk.messagebox.showerror("ERROR", "Allowed only chars: A,T,C,G !")
-				return 
+				return
 
 		self.sequences = [first_seq_fasta,second_seq_fasta]
 
@@ -245,6 +255,8 @@ class AppPanel(tk.Tk):
 			self.url_label_2.place(relx=0.5, rely=0.4, relwidth=0.5, relheight=0.05, anchor='n')
 			self.url_entry_2.place(relx=0.5, rely=0.45, relwidth=0.5, relheight=0.1, anchor='n')
 			self.url_get_btn.place(relx=0.5, rely=0.6, relwidth=0.4, relheight=0.1, anchor='n')
+			self.url_label_3.place(relx=0.5,rely=0.05,relwidth=0.5,relheight=0.05,anchor='n')
+			self.url_entry_3.place(relx=0.5,rely=0.1,relwidth=0.5,relheight=0.075,anchor='n')
 
 
 		elif(self.comboBox.current()==2):

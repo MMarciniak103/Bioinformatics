@@ -21,8 +21,8 @@ class APIConnector:
 					del result_list[i]
 			self.content = self.parser.parse_data(result_list)
 		except InvalidSequenceException:
-			tk.messagebox.showerror("Requiered 2 sequences!")
+			tk.messagebox.showerror("Error","Requiered 2 sequences!")
 		except Exception:
-			tk.messagebox.showerror("Invalid URL")
+			tk.messagebox.showerror("Error","Invalid URL")
 
 		return self.content

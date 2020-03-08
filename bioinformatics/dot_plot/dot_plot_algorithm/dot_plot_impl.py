@@ -19,8 +19,11 @@ class DotPlot():
 
 	def make_dot_plot(self):
 		dot_plot = np.zeros((self._xlen,self._ylen))
-		dot_plot2 =  [[self.compare_pair(self.sequences[0].get_sequence()[i],self.sequences[1].get_sequence()[j]) for i in range(self._xlen)] for j in range(self._ylen)]
-		return dot_plot2
+		# dot_plot =  [[self.compare_pair(self.sequences[0].get_sequence()[i],self.sequences[1].get_sequence()[j]) for i in range(self._xlen)] for j in range(self._ylen)]
+		for i in range(self._xlen):
+			for j in range(self._ylen):
+				dot_plot[i,j] = self.compare_pair(self.sequences[0].get_sequence()[i],self.sequences[1].get_sequence()[j])
+		return dot_plot
 
 	def compare_pair(self,element1,element2):
 		if element1 == element2:
@@ -28,6 +31,15 @@ class DotPlot():
 		return 0
 
 	def run_window(self,matrix,K=4,S=1):
+		'''
+		Method enables to filter dot matrix with usage of specific window.
+		User has to specify window length and threshold level that would decide if current window is going to be kept.
+		This method runs convolution of filter window with dot matrix in order to filter it.
+		:param matrix: dot matrix of 2 sequences
+		:param K:  window length
+		:param S: threshold value
+		:return: convolution of dot matrix with filter window
+		'''
 		matrix = np.array(matrix)
 		matrix2 = np.zeros(np.shape(matrix))
 		#Find out how many steps would filter make in a given direction
@@ -43,6 +55,6 @@ class DotPlot():
 				sum_of_elemnents = np.sum(diagonal)
 				#If diagonal contains more elements than given threshold, we clear all elements that lay outside it
 				if sum_of_elemnents >= K-S:
-					matrix2[i:i+K,j:j+K] = np.zeros(np.shape(window)) + np.diagflat(diagonal)
+					matrix2[i:i+K,j:j+K] = np.diagflat(diagonal)
 		return matrix2
 
