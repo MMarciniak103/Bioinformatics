@@ -17,6 +17,8 @@ class AppPanel(tk.Tk):
 		self.height = height
 		self.width = width
 
+		self.matrix = None
+
 		self.sequences = []
 
 		font_type = ('Tahoma',8,'bold')
@@ -126,14 +128,15 @@ class AppPanel(tk.Tk):
 				tk.messagebox.showerror("ERROR","Requiered 2 sequences!")
 
 		dot_plot_manager = DotPlot(self.sequences)
-		matrix = dot_plot_manager.make_dot_plot()
+		if self.matrix is None:
+			self.matrix = dot_plot_manager.make_dot_plot()
 		if self.var1.get() == 1:
 			window_size = self.window_size_entry.get()
 			window_threshold = self.threshold_entry.get()
 			if window_size=='' or window_threshold=='':
 				tk.messagebox.showerror('ERROR','Provide window size and threshold level!')
 				return
-			windowed = dot_plot_manager.run_window(matrix,K = int(window_size),S = int(window_threshold))
+			windowed = dot_plot_manager.run_window(self.matrix,K = int(window_size),S = int(window_threshold))
 			fig2 = plt.figure()
 			plt.imshow(windowed,cmap='binary')
 			plt.title(f'Window size = {window_size} and threshold = {window_threshold}')
@@ -141,7 +144,7 @@ class AppPanel(tk.Tk):
 			plt.ylabel('\n'.join(wrap(self.sequences[1].get_sequence_name(), 50)))
 		fig  = plt.figure()
 		plt.title('Dot Plot')
-		plt.imshow(matrix,cmap='binary')
+		plt.imshow(self.matrix,cmap='binary')
 		plt.xlabel('\n'.join(wrap(self.sequences[0].get_sequence_name(),50)))
 		plt.ylabel('\n'.join(wrap(self.sequences[1].get_sequence_name(),50)))
 		fig.tight_layout()
@@ -169,6 +172,8 @@ class AppPanel(tk.Tk):
 				except InvalidSequenceException:
 					tk.messagebox.showerror("ERROR","Requiered 2 sequences in file!")
 
+		self.matrix = None
+
 		self._hide(self.url_label_1)
 
 
@@ -184,6 +189,7 @@ class AppPanel(tk.Tk):
 			db_type = 'nuccore'
 		url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db={db_type}&id={self.url_entry_1.get()},{self.url_entry_2.get()}&rettype=fasta&retmode=text"
 
+		self.matrix = None
 		self.sequences = api_conn.request(url)
 		
 
@@ -222,7 +228,7 @@ class AppPanel(tk.Tk):
 			except InvalidCharsInSequenceException:
 				tk.messagebox.showerror("ERROR", "Allowed only chars: A,T,C,G !")
 				return
-
+		self.matrix = None
 		self.sequences = [first_seq_fasta,second_seq_fasta]
 
 	def validate_char(self,char):
