@@ -55,6 +55,6 @@ class DotPlot():
 				sum_of_elemnents = np.sum(diagonal)
 				#If diagonal contains more elements than given threshold, we clear all elements that lay outside it
 				if sum_of_elemnents >= K-S:
-					matrix2[i:i+K,j:j+K] = np.diagflat(diagonal)
+					matrix2[i:i+K,j:j+K] = np.logical_or(matrix2[i:i+K,j:j+K],np.diagflat(diagonal))*1.0
 		return matrix2
 
