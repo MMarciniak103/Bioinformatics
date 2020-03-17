@@ -17,6 +17,8 @@ class AppPanel(tk.Tk):
 		self.height = height
 		self.width = width
 
+		self.resizable(False,False)
+
 		self.matrix = None
 
 		self.sequences = []
