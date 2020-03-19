@@ -12,7 +12,7 @@ from textwrap import wrap
 class AppPanel(tk.Tk):
 
 
-	def __init__(self,height=700,width=600,*args,**kwargs):
+	def __init__(self,height=800,width=600,*args,**kwargs):
 		tk.Tk.__init__(self,*args,**kwargs)
 		self.height = height
 		self.width = width
@@ -92,7 +92,7 @@ class AppPanel(tk.Tk):
 		self.plot_btn_frame = tk.Frame(self,bg=BG_COLOR)
 		self.plot_btn_frame.place(relx=0.5,rely=0.75,relwidth=0.90,relheight=0.2,anchor='n')
 		self.plot_btn = tk.Button(self.plot_btn_frame,bg=LIME,font=font_type,text='Plot',command=lambda:self.plot())
-		self.plot_btn.place(relx=0.5,rely=0.35,relwidth=0.2,relheight=0.2,anchor='n')
+		self.plot_btn.place(relx=0.5,rely=0.15,relwidth=0.2,relheight=0.2,anchor='n')
 		self.var1 = tk.IntVar()
 		self.windowed_check_box =tk.Checkbutton(self.plot_btn_frame, text="use window", variable=self.var1,onvalue=1,offvalue=0,command=lambda:self.show_window_widgets())
 		self.windowed_check_box.place(relx=0.85,rely=0.4,relwidth=0.2,relheight=0.3,anchor='n')
@@ -109,6 +109,12 @@ class AppPanel(tk.Tk):
 		self.window_widgets = []
 		self.window_widgets.extend([self.window_size_label,self.window_size_entry,self.threshold_label,self.threshold_entry])
 
+		#Alignment Buttons
+		self.global_alignment_btn = tk.Button(self.plot_btn_frame,bg=LIME,font=font_type,text="Global alignment")
+		self.global_alignment_btn.place(relx=0.5,rely=0.4,relwidth=0.3,relheight=0.2,anchor='n')
+
+
+
 	def show_window_widgets(self):
 		if(self.var1.get()==1):
 			self.window_size_label.place(relx=0.05, rely=0.3, relheight=0.1, relwidth=0.2)
@@ -124,10 +130,12 @@ class AppPanel(tk.Tk):
 		plt.close('all')
 		if len(self.sequences) !=2 :
 			tk.messagebox.showerror("ERROR","Requiered 2 sequences!")
+			return
 
 		for sequence in self.sequences:
 			if sequence.get_sequence()  == '':
 				tk.messagebox.showerror("ERROR","Requiered 2 sequences!")
+				return
 
 		dot_plot_manager = DotPlot(self.sequences)
 		if self.matrix is None:
