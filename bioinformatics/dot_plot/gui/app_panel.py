@@ -6,8 +6,10 @@ from parsers.fasta_parser import FastaParser,InvalidSequenceException,InvalidCha
 from data_structures.fasta import FastaSequence
 from api_connector.connector import APIConnector
 from dot_plot_algorithm.dot_plot_impl import  DotPlot
+from gui.alignment_window import AlignmentWindow
 import re 
 from textwrap import wrap
+
 
 class AppPanel(tk.Tk):
 
@@ -22,6 +24,7 @@ class AppPanel(tk.Tk):
 		self.matrix = None
 
 		self.sequences = []
+		self.top_windows = []
 
 		font_type = ('Tahoma',8,'bold')
 		BG_COLOR = "#212121"
@@ -110,7 +113,7 @@ class AppPanel(tk.Tk):
 		self.window_widgets.extend([self.window_size_label,self.window_size_entry,self.threshold_label,self.threshold_entry])
 
 		#Alignment Buttons
-		self.global_alignment_btn = tk.Button(self.plot_btn_frame,bg=LIME,font=font_type,text="Global alignment")
+		self.global_alignment_btn = tk.Button(self.plot_btn_frame,bg=LIME,font=font_type,text="Global alignment",command = lambda:self.show_alignment_window())
 		self.global_alignment_btn.place(relx=0.5,rely=0.4,relwidth=0.3,relheight=0.2,anchor='n')
 
 
@@ -124,6 +127,16 @@ class AppPanel(tk.Tk):
 		else:
 			for item in self.window_widgets:
 				self._hide(item)
+
+	def show_alignment_window(self):
+		for top_window in self.top_windows:
+			top_window.destroy()
+		alignment_window = AlignmentWindow(self)
+		self.top_windows.clear()
+		self.top_windows.append(alignment_window)
+
+		print(self.top_windows)
+
 
 	def plot(self):
 
