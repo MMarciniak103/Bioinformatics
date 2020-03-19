@@ -27,85 +27,80 @@ class AppPanel(tk.Tk):
 		self.top_windows = []
 
 		font_type = ('Tahoma',8,'bold')
-		BG_COLOR = "#212121"
-		LIME = "#76FF03"
+		self.BG_COLOR = "#212121"
+		self.LIME = "#76FF03"
 
 		canvas = tk.Canvas(self,height=self.height,width=self.width)
 		canvas.pack()
-		canvas.configure(background=BG_COLOR)
+		canvas.configure(background=self.BG_COLOR)
 
 		#ComboBox that is associated with choosing data aquiring method
-		self.combo_box_frame = tk.Frame(self,bg=BG_COLOR)
+		self.combo_box_frame = tk.Frame(self,bg=self.BG_COLOR)
 		self.combo_box_frame.place(relx=0.5, rely=0.05, relwidth=0.3, relheight=0.1, anchor='n')
 		self.comboBox = ttk.Combobox(self.combo_box_frame, values=['File', 'Api Request', 'Custom'])
 		self.comboBox.place(relwidth=1,relheight=0.5)
 		self.comboBox.current(1)
 		self.comboBox.bind("<<ComboboxSelected>>",self.cb_selection)
 
-		self.frame = tk.Frame(self,bd=5,bg=BG_COLOR)
+		self.frame = tk.Frame(self,bd=5,bg=self.BG_COLOR)
 		self.frame.place(relx=0.5,rely=0.10,relwidth=0.75,relheight=0.85,anchor='n')
 
 		#Widgets associated with api request url 
 		self.url_widgets = []
-		self.url_label_3 = tk.Label(self.frame,font=font_type,bg=LIME)
+		self.url_label_3 = tk.Label(self.frame, font=font_type, bg=self.LIME)
 		self.url_label_3.place(relx=0.5,rely=0.05,relwidth=0.5,relheight=0.05,anchor='n')
 		self.url_label_3['text'] = 'DB type:'
 		self.url_entry_3 = tk.Entry(self.frame,font=font_type,bd=1)
 		self.url_entry_3.place(relx=0.5,rely=0.1,relwidth=0.5,relheight=0.075,anchor='n')
-		self.url_label_1 = tk.Label(self.frame, font=font_type,bg=LIME)
+		self.url_label_1 = tk.Label(self.frame, font=font_type,bg=self.LIME)
 		self.url_label_1.place(relx=0.5, rely=0.2, relwidth=0.5, relheight=0.05, anchor='n')
 		self.url_label_1['text'] = '1st sequence ID:'
 		self.url_entry_1 = tk.Entry(self.frame, font=font_type, bd=1)
 		self.url_entry_1.place(relx=0.5, rely=0.25, relwidth=0.5, relheight=0.1, anchor='n')
 		
-		self.url_label_2 = tk.Label(self.frame, font=font_type,bg=LIME)
+		self.url_label_2 = tk.Label(self.frame, font=font_type,bg=self.LIME)
 		self.url_label_2.place(relx=0.5, rely=0.4, relwidth=0.5, relheight=0.05, anchor='n')
 		self.url_label_2['text'] = '2nd sequence ID:'
 		self.url_entry_2 = tk.Entry(self.frame, font=font_type, bd=1)
 		self.url_entry_2.place(relx=0.5, rely=0.45, relwidth=0.5, relheight=0.1, anchor='n')
 
-		self.url_get_btn = tk.Button(self.frame,text='Request',font=font_type,bg=LIME,command=lambda:self.make_request())
+		self.url_get_btn = tk.Button(self.frame,text='Request',font=font_type,bg=self.LIME,command=lambda:self.make_request())
 		self.url_get_btn.place(relx=0.5,rely=0.6,relwidth=0.4,relheight=0.1,anchor='n')
 
 		self.url_widgets.extend([self.url_label_1,self.url_label_2,self.url_entry_1,self.url_entry_2,self.url_get_btn,self.url_entry_3,self.url_label_3])
 
 
 		#Button that opens filechooser dialog
-		self.filechooser_btn = tk.Button(self.frame,text='Read File',bg=LIME,font=font_type,command=lambda:self.read_file())
+		self.filechooser_btn = tk.Button(self.frame,text='Read File',bg=self.LIME,font=font_type,command=lambda:self.read_file())
 		# self.filechooser_btn.place(relx=0.5,rely=0.3,relwidth=0.15,relheight=0.4,anchor='n')
 
 		#Custom sequences entries
-		self.first_seq_label = tk.Label(self.frame,font=font_type,bg=LIME)
+		self.first_seq_label = tk.Label(self.frame,font=font_type,bg=self.LIME)
 		self.first_seq_label['text'] = 'First Sequence'
 		self.first_seq_entry = tk.Entry(self.frame,font=font_type)
-		self.second_seq_label = tk.Label(self.frame,font=font_type,bg=LIME)
+		self.second_seq_label = tk.Label(self.frame,font=font_type,bg=self.LIME)
 		self.second_seq_label['text'] = 'Second Sequence'
 		self.second_seq_entry = tk.Entry(self.frame,font=font_type)
-		self.custom_seq_btn = tk.Button(self.frame,text='Pass Sequences',bg=LIME,font=font_type,command=lambda:self.load_custom_seq())
+		self.custom_seq_btn = tk.Button(self.frame,text='Pass Sequences',bg=self.LIME,font=font_type,command=lambda:self.load_custom_seq())
 		self.custom_seq_widgets = []
 		self.custom_seq_widgets.extend([self.first_seq_label,self.first_seq_entry,self.second_seq_label,self.second_seq_entry,self.custom_seq_btn])
 
-		#Chart Frame 
-		self.chart_frame = tk.Frame(self,bd=5,bg=BG_COLOR)
-		self.figure= plt.Figure(dpi=100)
-		self.ax = self.figure.add_subplot(111)
-        #
-		
+
 		#Plot Button 
-		self.plot_btn_frame = tk.Frame(self,bg=BG_COLOR)
+		self.plot_btn_frame = tk.Frame(self,bg=self.BG_COLOR)
 		self.plot_btn_frame.place(relx=0.5,rely=0.75,relwidth=0.90,relheight=0.2,anchor='n')
-		self.plot_btn = tk.Button(self.plot_btn_frame,bg=LIME,font=font_type,text='Plot',command=lambda:self.plot())
+		self.plot_btn = tk.Button(self.plot_btn_frame,bg=self.LIME,font=font_type,text='Plot',command=lambda:self.plot())
 		self.plot_btn.place(relx=0.5,rely=0.15,relwidth=0.2,relheight=0.2,anchor='n')
 		self.var1 = tk.IntVar()
 		self.windowed_check_box =tk.Checkbutton(self.plot_btn_frame, text="use window", variable=self.var1,onvalue=1,offvalue=0,command=lambda:self.show_window_widgets())
 		self.windowed_check_box.place(relx=0.85,rely=0.4,relwidth=0.2,relheight=0.3,anchor='n')
 
 		#Window size and threshold values widgets
-		self.window_size_label = tk.Label(self.plot_btn_frame,font=font_type,bg=LIME)
+		self.window_size_label = tk.Label(self.plot_btn_frame,font=font_type,bg=self.LIME)
 		self.window_size_label['text'] = 'Window size'
 		self.window_size_entry = tk.Entry(self.plot_btn_frame,font=font_type)
 
-		self.threshold_label = tk.Label(self.plot_btn_frame,font=font_type,bg=LIME)
+		self.threshold_label = tk.Label(self.plot_btn_frame,font=font_type,bg=self.LIME)
 		self.threshold_label['text'] = 'Threshold'
 		self.threshold_entry = tk.Entry(self.plot_btn_frame,font=font_type)
 
@@ -113,7 +108,7 @@ class AppPanel(tk.Tk):
 		self.window_widgets.extend([self.window_size_label,self.window_size_entry,self.threshold_label,self.threshold_entry])
 
 		#Alignment Buttons
-		self.global_alignment_btn = tk.Button(self.plot_btn_frame,bg=LIME,font=font_type,text="Global alignment",command = lambda:self.show_alignment_window())
+		self.global_alignment_btn = tk.Button(self.plot_btn_frame,bg=self.LIME,font=font_type,text="Global alignment",command = lambda:self.show_alignment_window())
 		self.global_alignment_btn.place(relx=0.5,rely=0.4,relwidth=0.3,relheight=0.2,anchor='n')
 
 
@@ -134,8 +129,6 @@ class AppPanel(tk.Tk):
 		alignment_window = AlignmentWindow(self)
 		self.top_windows.clear()
 		self.top_windows.append(alignment_window)
-
-		print(self.top_windows)
 
 
 	def plot(self):
