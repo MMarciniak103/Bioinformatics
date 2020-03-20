@@ -26,7 +26,7 @@ class AppPanel(tk.Tk):
 		self.sequences = []
 		self.top_windows = []
 
-		font_type = ('Tahoma',8,'bold')
+		self.font_type = ('Tahoma',8,'bold')
 		self.BG_COLOR = "#212121"
 		self.LIME = "#76FF03"
 
@@ -47,41 +47,41 @@ class AppPanel(tk.Tk):
 
 		#Widgets associated with api request url 
 		self.url_widgets = []
-		self.url_label_3 = tk.Label(self.frame, font=font_type, bg=self.LIME)
+		self.url_label_3 = tk.Label(self.frame, font=self.font_type, bg=self.LIME)
 		self.url_label_3.place(relx=0.5,rely=0.05,relwidth=0.5,relheight=0.05,anchor='n')
 		self.url_label_3['text'] = 'DB type:'
-		self.url_entry_3 = tk.Entry(self.frame,font=font_type,bd=1)
+		self.url_entry_3 = tk.Entry(self.frame,font=self.font_type,bd=1)
 		self.url_entry_3.place(relx=0.5,rely=0.1,relwidth=0.5,relheight=0.075,anchor='n')
-		self.url_label_1 = tk.Label(self.frame, font=font_type,bg=self.LIME)
+		self.url_label_1 = tk.Label(self.frame, font=self.font_type,bg=self.LIME)
 		self.url_label_1.place(relx=0.5, rely=0.2, relwidth=0.5, relheight=0.05, anchor='n')
 		self.url_label_1['text'] = '1st sequence ID:'
-		self.url_entry_1 = tk.Entry(self.frame, font=font_type, bd=1)
+		self.url_entry_1 = tk.Entry(self.frame, font=self.font_type, bd=1)
 		self.url_entry_1.place(relx=0.5, rely=0.25, relwidth=0.5, relheight=0.1, anchor='n')
 		
-		self.url_label_2 = tk.Label(self.frame, font=font_type,bg=self.LIME)
+		self.url_label_2 = tk.Label(self.frame, font=self.font_type,bg=self.LIME)
 		self.url_label_2.place(relx=0.5, rely=0.4, relwidth=0.5, relheight=0.05, anchor='n')
 		self.url_label_2['text'] = '2nd sequence ID:'
-		self.url_entry_2 = tk.Entry(self.frame, font=font_type, bd=1)
+		self.url_entry_2 = tk.Entry(self.frame, font=self.font_type, bd=1)
 		self.url_entry_2.place(relx=0.5, rely=0.45, relwidth=0.5, relheight=0.1, anchor='n')
 
-		self.url_get_btn = tk.Button(self.frame,text='Request',font=font_type,bg=self.LIME,command=lambda:self.make_request())
+		self.url_get_btn = tk.Button(self.frame,text='Request',font=self.font_type,bg=self.LIME,command=lambda:self.make_request())
 		self.url_get_btn.place(relx=0.5,rely=0.6,relwidth=0.4,relheight=0.1,anchor='n')
 
 		self.url_widgets.extend([self.url_label_1,self.url_label_2,self.url_entry_1,self.url_entry_2,self.url_get_btn,self.url_entry_3,self.url_label_3])
 
 
 		#Button that opens filechooser dialog
-		self.filechooser_btn = tk.Button(self.frame,text='Read File',bg=self.LIME,font=font_type,command=lambda:self.read_file())
+		self.filechooser_btn = tk.Button(self.frame,text='Read File',bg=self.LIME,font=self.font_type,command=lambda:self.read_file())
 		# self.filechooser_btn.place(relx=0.5,rely=0.3,relwidth=0.15,relheight=0.4,anchor='n')
 
 		#Custom sequences entries
-		self.first_seq_label = tk.Label(self.frame,font=font_type,bg=self.LIME)
+		self.first_seq_label = tk.Label(self.frame,font=self.font_type,bg=self.LIME)
 		self.first_seq_label['text'] = 'First Sequence'
-		self.first_seq_entry = tk.Entry(self.frame,font=font_type)
-		self.second_seq_label = tk.Label(self.frame,font=font_type,bg=self.LIME)
+		self.first_seq_entry = tk.Entry(self.frame,font=self.font_type)
+		self.second_seq_label = tk.Label(self.frame,font=self.font_type,bg=self.LIME)
 		self.second_seq_label['text'] = 'Second Sequence'
-		self.second_seq_entry = tk.Entry(self.frame,font=font_type)
-		self.custom_seq_btn = tk.Button(self.frame,text='Pass Sequences',bg=self.LIME,font=font_type,command=lambda:self.load_custom_seq())
+		self.second_seq_entry = tk.Entry(self.frame,font=self.font_type)
+		self.custom_seq_btn = tk.Button(self.frame,text='Pass Sequences',bg=self.LIME,font=self.font_type,command=lambda:self.load_custom_seq())
 		self.custom_seq_widgets = []
 		self.custom_seq_widgets.extend([self.first_seq_label,self.first_seq_entry,self.second_seq_label,self.second_seq_entry,self.custom_seq_btn])
 
@@ -89,26 +89,26 @@ class AppPanel(tk.Tk):
 		#Plot Button 
 		self.plot_btn_frame = tk.Frame(self,bg=self.BG_COLOR)
 		self.plot_btn_frame.place(relx=0.5,rely=0.75,relwidth=0.90,relheight=0.2,anchor='n')
-		self.plot_btn = tk.Button(self.plot_btn_frame,bg=self.LIME,font=font_type,text='Plot',command=lambda:self.plot())
+		self.plot_btn = tk.Button(self.plot_btn_frame,bg=self.LIME,font=self.font_type,text='Plot',command=lambda:self.plot())
 		self.plot_btn.place(relx=0.5,rely=0.15,relwidth=0.2,relheight=0.2,anchor='n')
 		self.var1 = tk.IntVar()
 		self.windowed_check_box =tk.Checkbutton(self.plot_btn_frame, text="use window", variable=self.var1,onvalue=1,offvalue=0,command=lambda:self.show_window_widgets())
 		self.windowed_check_box.place(relx=0.85,rely=0.4,relwidth=0.2,relheight=0.3,anchor='n')
 
 		#Window size and threshold values widgets
-		self.window_size_label = tk.Label(self.plot_btn_frame,font=font_type,bg=self.LIME)
+		self.window_size_label = tk.Label(self.plot_btn_frame,font=self.font_type,bg=self.LIME)
 		self.window_size_label['text'] = 'Window size'
-		self.window_size_entry = tk.Entry(self.plot_btn_frame,font=font_type)
+		self.window_size_entry = tk.Entry(self.plot_btn_frame,font=self.font_type)
 
-		self.threshold_label = tk.Label(self.plot_btn_frame,font=font_type,bg=self.LIME)
+		self.threshold_label = tk.Label(self.plot_btn_frame,font=self.font_type,bg=self.LIME)
 		self.threshold_label['text'] = 'Threshold'
-		self.threshold_entry = tk.Entry(self.plot_btn_frame,font=font_type)
+		self.threshold_entry = tk.Entry(self.plot_btn_frame,font=self.font_type)
 
 		self.window_widgets = []
 		self.window_widgets.extend([self.window_size_label,self.window_size_entry,self.threshold_label,self.threshold_entry])
 
 		#Alignment Buttons
-		self.global_alignment_btn = tk.Button(self.plot_btn_frame,bg=self.LIME,font=font_type,text="Global alignment",command = lambda:self.show_alignment_window())
+		self.global_alignment_btn = tk.Button(self.plot_btn_frame,bg=self.LIME,font=self.font_type,text="Alignment",command = lambda:self.show_alignment_window())
 		self.global_alignment_btn.place(relx=0.5,rely=0.4,relwidth=0.3,relheight=0.2,anchor='n')
 
 
@@ -124,6 +124,10 @@ class AppPanel(tk.Tk):
 				self._hide(item)
 
 	def show_alignment_window(self):
+
+		# if not self.check_sequences():
+		# 	return
+
 		for top_window in self.top_windows:
 			top_window.destroy()
 		alignment_window = AlignmentWindow(self)
@@ -131,17 +135,30 @@ class AppPanel(tk.Tk):
 		self.top_windows.append(alignment_window)
 
 
-	def plot(self):
-
-		plt.close('all')
-		if len(self.sequences) !=2 :
-			tk.messagebox.showerror("ERROR","Requiered 2 sequences!")
-			return
+	def check_sequences(self):
+		'''
+		Method that is used to check if provided sequences are valid.
+		:return: boolean value of sequences valid status.
+		'''
+		if len(self.sequences) != 2:
+			tk.messagebox.showerror("ERROR", "Requiered 2 sequences!")
+			return False
 
 		for sequence in self.sequences:
-			if sequence.get_sequence()  == '':
-				tk.messagebox.showerror("ERROR","Requiered 2 sequences!")
-				return
+			if sequence.get_sequence() == '':
+				tk.messagebox.showerror("ERROR", "Requiered 2 sequences!")
+				return False
+		return  True
+
+	def plot(self):
+		"""
+		Method that makes dot plot for given sequences. If given sequences are invalid it would show popup window with exception.
+		:return:
+		"""
+		plt.close('all')
+
+		if not self.check_sequences():
+			return
 
 		dot_plot_manager = DotPlot(self.sequences)
 		if self.matrix is None:
