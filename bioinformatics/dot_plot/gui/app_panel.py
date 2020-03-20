@@ -125,8 +125,8 @@ class AppPanel(tk.Tk):
 
 	def show_alignment_window(self):
 
-		# if not self.check_sequences():
-		# 	return
+		if not self.check_sequences():
+			return
 
 		for top_window in self.top_windows:
 			top_window.destroy()

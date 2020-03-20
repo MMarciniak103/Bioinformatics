@@ -1,9 +1,8 @@
 from data_structures.fasta import FastaSequence
 import numpy as np
 
-class DotPlot():
+class DotPlot:
 	def __init__(self,sequences):
-		super().__init__()
 		for seq in sequences:
 			assert isinstance(seq,FastaSequence) , 'Sequenced must be object of FastaSequence'
 
