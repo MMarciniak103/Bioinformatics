@@ -169,6 +169,13 @@ class AppPanel(tk.Tk):
 			if window_size=='' or window_threshold=='':
 				tk.messagebox.showerror('ERROR','Provide window size and threshold level!')
 				return
+			shorter_seq = self.sequences[0].get_sequence_length() if self.sequences[0].get_sequence_length() < self.sequences[1].get_sequence_length() else self.sequences[1].get_sequence_length()
+			if int(window_size) > shorter_seq:
+				tk.messagebox.showerror('ERROR','Choose smaller window size!')
+				return
+			if int(window_threshold) > int(window_size):
+				tk.messagebox.showerror('ERROR', 'Threshold value cannot be bigger than window size!')
+				return
 			windowed = dot_plot_manager.run_window(self.matrix,K = int(window_size),S = int(window_threshold))
 			fig2 = plt.figure()
 			plt.imshow(windowed,cmap='binary')

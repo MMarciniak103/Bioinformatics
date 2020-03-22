@@ -13,7 +13,7 @@ class FastaSequence:
 		return self.name
 
 	def get_sequence_length(self):
-		return len(self.sequence)
+		return len(self.sequence[0])
 
 	def __str__(self):
 		return f'{self.name}-----{self.sequence}'
