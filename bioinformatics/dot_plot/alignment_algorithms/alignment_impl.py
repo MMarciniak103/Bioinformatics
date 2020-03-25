@@ -8,7 +8,7 @@ class GlobalAlignment:
 
         self.sequences = sequences
 
-    def _get_score(self,matrix, i, j, insertion, deletion, substitution):
+    def _get_score(self,matrix, i, j, insertion, deletion, substitution, match):
         '''
         Find minimum cost of getting to position i,j from possible 3 states
         :param matrix: matrix containing alignment cost
@@ -19,12 +19,13 @@ class GlobalAlignment:
         :param substitution: substitution cost value
         :return:
         '''
-        return np.min([matrix[i - 1][j - 1] + substitution * (self.sequences[1].get_sequence()[i - 1] != self.sequences[0].get_sequence()[j - 1]),
+        diagonal_cost = substitution if self.sequences[1].get_sequence()[i - 1] != self.sequences[0].get_sequence()[j - 1] else match
+        return np.min([matrix[i - 1][j - 1] +  diagonal_cost,
                        matrix[i - 1][j] + deletion,
                        matrix[i][j - 1] + insertion])
 
 
-    def predict_alignment(self,insertion_cost=1,deletion_cost=1,substitution_cost=1):
+    def predict_alignment(self,insertion_cost=1,deletion_cost=1,substitution_cost=1,match_cost=0):
         '''
         Find Global Alignment of 2 sequences
         :param insertion_cost: cost of insertion
@@ -49,7 +50,7 @@ class GlobalAlignment:
         #Find cost of every possible position -> dynamic programming
         for i in range(1, matrix.shape[0]):
             for j in range(1, matrix.shape[1]):
-                matrix[i][j] = self._get_score(matrix, i, j, insertion_cost, deletion_cost, substitution_cost)
+                matrix[i][j] = self._get_score(matrix, i, j, insertion_cost, deletion_cost, substitution_cost,match_cost)
 
         #-------------------------------- TRACE BACK FOR OPTIMAL ALIGNMENT ------------------------------------------
         # This implementation is favoring substitution over insertion or deletion
@@ -67,12 +68,14 @@ class GlobalAlignment:
                 break
             else:
                 #Check diagonal way
-                if ((i > 0 and j > 0 and (matrix[i][j] == matrix[i - 1][j - 1] + substitution_cost * (self.sequences[1].get_sequence()[i - 1] != self.sequences[0].get_sequence()[j - 1])))):
+                diagonal_cost = substitution_cost if self.sequences[1].get_sequence()[i - 1] !=  self.sequences[0].get_sequence()[j - 1] else match_cost
+                if ((i > 0 and j > 0 and (matrix[i][j] == matrix[i - 1][j - 1] + diagonal_cost))):
                     aln1 = self.sequences[0].get_sequence()[j - 1] + aln1
                     aln2 = self.sequences[1].get_sequence()[i - 1] + aln2
                     if (self.sequences[1].get_sequence()[i - 1] == self.sequences[0].get_sequence()[j - 1]):
                         identity += 1
                         aln3 = "|" + aln3
+                        score += match_cost
                     else:
                         score += substitution_cost
                         aln3 = "*" + aln3

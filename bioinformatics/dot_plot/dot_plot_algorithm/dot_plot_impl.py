@@ -18,10 +18,12 @@ class DotPlot:
 
 	def make_dot_plot(self):
 		dot_plot = np.zeros((self._xlen,self._ylen))
+		seq1 = self.sequences[0].get_sequence()
+		seq2 = self.sequences[1].get_sequence()
 		# dot_plot =  [[self.compare_pair(self.sequences[0].get_sequence()[i],self.sequences[1].get_sequence()[j]) for i in range(self._xlen)] for j in range(self._ylen)]
 		for i in range(self._xlen):
 			for j in range(self._ylen):
-				dot_plot[i,j] = self.compare_pair(self.sequences[0].get_sequence()[i],self.sequences[1].get_sequence()[j])
+				dot_plot[i,j] = self.compare_pair(seq1[i],seq2[j])
 		return dot_plot
 
 	def compare_pair(self,element1,element2):
