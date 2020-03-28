@@ -1,6 +1,10 @@
 import tkinter as tk
 from alignment_algorithms.alignment_impl import GlobalAlignment
 from tkinter import filedialog
+from textwrap import wrap
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.lines import Line2D
 
 class AlignmentWindow(tk.Toplevel):
     def __init__(self,master,*args,**kwargs):
@@ -12,6 +16,8 @@ class AlignmentWindow(tk.Toplevel):
 
         self.print_text = ""
         self.alignments = []
+        self.alignment_matrix = None
+        self.path_matrix = None
 
         canvas = tk.Canvas(self, height=self.height, width=self.width)
         canvas.pack()
@@ -77,7 +83,8 @@ class AlignmentWindow(tk.Toplevel):
     def global_alignment(self,master):
         """
         Find global alignment of 2 given sequences with specified cost values for different scenarios.
-        After the alignment is found, it would print statistics of calculations.
+        After the alignment is found, it would print statistics of calculations and show score heatmap with
+        optimal alignment path.
         :param master: master window
         :return:
         """
@@ -91,14 +98,31 @@ class AlignmentWindow(tk.Toplevel):
 
 
         ga = GlobalAlignment(master.sequences)
-        alignments,score,gaps,identity = ga.predict_alignment(insertion_cost=float(insertion_cost),deletion_cost=float(deletion_cost),substitution_cost=float(substitution_cost),match_cost=float(match_cost))
+        alignments,score,gaps,identity,alignment_matrix,path_matrix = ga.predict_alignment(insertion_cost=float(insertion_cost),deletion_cost=float(deletion_cost),substitution_cost=float(substitution_cost),match_cost=float(match_cost))
         if len(alignments[0]) != 0:
             self.format_table_data(alignments, score, gaps, identity)
             self.alignments = alignments
+            self.alignment_matrix = alignment_matrix
+            self.path_matrix = path_matrix
             self.table_label['text'] = self.print_text
-        pass
+
+
+        plt.close('all')
+        fig = plt.figure()
+        sns.heatmap(self.alignment_matrix,annot=self.path_matrix,fmt='')
+        path_mark = Line2D([0], [0], color='w',marker='x',linewidth=0)
+        plt.legend([path_mark], ['alignment path'])
+        plt.title('Global Alignment')
+        plt.xlabel('\n'.join(wrap(self.master.sequences[0].get_sequence_name(), 50)))
+        plt.ylabel('\n'.join(wrap(self.master.sequences[1].get_sequence_name(), 50)))
+        plt.tight_layout()
+        plt.show()
 
     def save_alignment(self):
+        '''
+        Method that is used to save calculated alignment with its statistics.
+        :return:
+        '''
         if len(self.alignments) != 3 :
             tk.messagebox.showerror("ERROR", "There is no alignment!")
             return

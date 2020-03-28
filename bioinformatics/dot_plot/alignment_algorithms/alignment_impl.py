@@ -31,7 +31,7 @@ class GlobalAlignment:
         :param insertion_cost: cost of insertion
         :param deletion_cost: cost of deletion
         :param substitution_cost: cost of substitution
-        :return: alignments, score of alignment, no. gaps and no. identity positions
+        :return: alignments, score of alignment, no. gaps, no. identity positions and visual traced path
         '''
         n = len(self.sequences[1].get_sequence())
         m = len(self.sequences[0].get_sequence())
@@ -54,13 +54,15 @@ class GlobalAlignment:
 
         #-------------------------------- TRACE BACK FOR OPTIMAL ALIGNMENT ------------------------------------------
         # This implementation is favoring substitution over insertion or deletion
+        path_mark = 'x'
+        path_matrix = np.array([['' for i in range(m+1)] for j in range(n+1)]) #this matrix contains optimal alignment path
         i = n
         j = m
+        path_matrix[i][j]= path_mark
         aln1 = ""
         aln2 = ""
         aln3 = ""
         score = 0
-        mismatch =0
         gaps = 0
         identity = 0
         while True:
@@ -79,6 +81,7 @@ class GlobalAlignment:
                     else:
                         score += substitution_cost
                         aln3 = "*" + aln3
+                    path_matrix[i-1][j-1]=path_mark
                     i -= 1
                     j -= 1
 
@@ -89,6 +92,7 @@ class GlobalAlignment:
                         aln2 = self.sequences[1].get_sequence()[i - 1] + aln2
                         aln3 = " " + aln3
                         score += insertion_cost
+                        path_matrix[i - 1][j] = path_mark
                         i -= 1
                         gaps += 1
                     #Check vertical way
@@ -97,7 +101,7 @@ class GlobalAlignment:
                         aln3 = " " + aln3
                         aln2 = "-" + aln2
                         score += deletion_cost
+                        path_matrix[i][j-1] = path_mark
                         gaps += 1
                         j -= 1
-
-        return ([aln1,aln2,aln3],score,gaps,identity)
+        return ([aln1,aln2,aln3],score,gaps,identity,matrix,path_matrix)
