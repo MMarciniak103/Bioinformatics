@@ -6,8 +6,9 @@ from parsers.fasta_parser import FastaParser,InvalidSequenceException,InvalidCha
 from data_structures.fasta import FastaSequence
 from api_connector.connector import APIConnector
 from dot_plot_algorithm.dot_plot_impl import  DotPlot
-from gui.alignment_window import AlignmentWindow
-import re 
+from gui.global_alignment_window import GlobalAlignmentWindow
+from gui.local_alignment_window import LocalAlignmentWindow
+import re
 from textwrap import wrap
 
 
@@ -108,9 +109,12 @@ class AppPanel(tk.Tk):
 		self.window_widgets.extend([self.window_size_label,self.window_size_entry,self.threshold_label,self.threshold_entry])
 
 		#Alignment Buttons
-		self.global_alignment_btn = tk.Button(self.plot_btn_frame,bg=self.LIME,font=self.font_type,text="Alignment",command = lambda:self.show_alignment_window())
+		self.global_alignment_btn = tk.Button(self.plot_btn_frame,bg=self.LIME,font=self.font_type,text="Global Alignment",command = lambda:self.show_alignment_window('global'))
 		self.global_alignment_btn.place(relx=0.5,rely=0.4,relwidth=0.3,relheight=0.2,anchor='n')
 
+
+		self.local_alignment_btn = tk.Button(self.plot_btn_frame,bg=self.LIME,font=self.font_type,text="Local Alignment",command = lambda:self.show_alignment_window('local'))
+		self.local_alignment_btn.place(relx=0.5,rely=0.65,relwidth=0.3,relheight=0.2,anchor='n')
 
 
 	def show_window_widgets(self):
@@ -123,14 +127,19 @@ class AppPanel(tk.Tk):
 			for item in self.window_widgets:
 				self._hide(item)
 
-	def show_alignment_window(self):
+
+
+	def show_alignment_window(self,type):
 
 		if not self.check_sequences():
 			return
 
 		for top_window in self.top_windows:
 			top_window.destroy()
-		alignment_window = AlignmentWindow(self)
+		if type == 'global':
+			alignment_window = GlobalAlignmentWindow(self)
+		elif type == 'local':
+			alignment_window = LocalAlignmentWindow(self)
 		self.top_windows.clear()
 		self.top_windows.append(alignment_window)
 
