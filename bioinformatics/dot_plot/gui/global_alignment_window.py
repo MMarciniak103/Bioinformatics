@@ -1,5 +1,5 @@
 import tkinter as tk
-from alignment_algorithms.alignment_impl import GlobalAlignment
+from alignment_algorithms.global_alignment_impl import GlobalAlignment
 from tkinter import filedialog
 from textwrap import wrap
 import matplotlib.pyplot as plt
