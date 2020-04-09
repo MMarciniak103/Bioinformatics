@@ -137,3 +137,5 @@ dmypy.json
 tester.py
 bioinfvenv
 sprawozdania/
+test_samples/
+.idea/
