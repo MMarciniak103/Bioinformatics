@@ -72,9 +72,87 @@ class LocalAlignment:
                     j -= 1
         return [aln1, aln2]
 
+    def _generate_score_matrix(self, n, m):
+        """
+        Generates score matrix for linear gap penalty - Smith-Waterman Algorithm
+        :param n: rows number - length of 1 sequence
+        :param m: columns number - length of 2 sequence
+        :return: calculated score matrix and list containing positions of biggest values
+        """
+        matrix = np.zeros((n + 1, m + 1))
 
+        biggest_value = 0  # placeholder for biggest value seen
+        biggest_value_pos = []  # list containing positions of cells with values equal to biggest value
 
-    def predict_alignment(self):
+        for i in range(1, matrix.shape[0]):
+            for j in range(1, matrix.shape[1]):
+                matrix[i][j] = self.get_score(matrix, i, j)
+
+                # If current value is bigger than biggest_value, change reference
+                if matrix[i][j] > biggest_value:
+                    biggest_value = matrix[i][j]
+                    # clear positions of previous biggest values
+                    biggest_value_pos.clear()
+                    biggest_value_pos.append((i, j))
+                # If it is equal to biggest value append it list, so it can be referenced in backtracking
+                elif matrix[i][j] == biggest_value:
+                    biggest_value_pos.append((i, j))
+
+        return (matrix, biggest_value_pos)
+
+    def _affine_penalty(self,k,gap_open,gap_enlargement):
+        return gap_open + gap_enlargement * k
+
+    def _generate_score_matrix_affine(self,n,m,gap_enlargement):
+        """
+        Generates score matrix for affine gap penalty  - Gotoh Algorithm (Local)
+        :param n: rows number - length of 1 sequence
+        :param m: columns number  - length of 2 sequence
+        :param gap_enlargement: gap enlargement cost value
+        :return: 3 matrices used by algorithm to calculate final matrix score and list containing positions of biggest
+        values
+        """
+        matrix = np.zeros((n + 1, m + 1))
+        P = np.zeros((n + 1, m + 1))
+        Q = np.zeros((n + 1, m + 1))
+
+        for i in range(1, P.shape[1]):
+            P[0][i] = -np.inf
+
+        for i in range(1, Q.shape[0]):
+            Q[i][0] = -np.inf
+
+        biggest_value = 0
+        biggest_value_pos = []
+        for i in range(1, matrix.shape[0]):
+            for j in range(1, matrix.shape[1]):
+
+                P_gap_open = self.substitution_matrix[self.y[i-1]]['-']
+
+                P[i][j] = np.max([matrix[i - 1][j] + self._affine_penalty(1, P_gap_open,gap_enlargement),
+                                  P[i - 1][j] + gap_enlargement])
+
+                Q_gap_open =  self.substitution_matrix['-'][self.x[j-1]]
+                Q[i][j] = np.max([matrix[i][j - 1] + self._affine_penalty(1,Q_gap_open,gap_enlargement),
+                                  Q[i][j - 1] + gap_enlargement])
+
+                matrix[i][j] = np.max([
+                    matrix[i - 1][j - 1] + self.substitution_matrix[self.y[i - 1]][self.x[j - 1]],
+                    P[i][j],
+                    Q[i][j],
+                    0
+                ])
+
+                if matrix[i][j] > biggest_value:
+                    biggest_value = matrix[i][j]
+                    biggest_value_pos.clear()
+                    biggest_value_pos.append((i, j))
+                elif matrix[i][j] == biggest_value:
+                    biggest_value_pos.append((i, j))
+
+        return (P,Q,matrix,biggest_value_pos)
+
+    def predict_alignment(self,affine_gaping = 0,gap_enlargement=0):
         """
         Find possible local alignments of 2 sequences
         :return: list containing all alignments found by algorithm.
@@ -82,24 +160,11 @@ class LocalAlignment:
         n = len(self.y)
         m = len(self.x)
 
-        matrix = np.zeros((n + 1, m + 1))
 
-        biggest_value = 0 #placeholder for biggest value seen
-        biggest_value_pos = [] #list containing positions of cells with values equal to biggest value
-
-        for i in range(1, matrix.shape[0]):
-            for j in range(1, matrix.shape[1]):
-                matrix[i][j] = self.get_score(matrix, i, j)
-
-                #If current value is bigger than biggest_value, change reference
-                if matrix[i][j] > biggest_value:
-                    biggest_value = matrix[i][j]
-                    #clear positions of previous biggest values
-                    biggest_value_pos.clear()
-                    biggest_value_pos.append((i, j))
-                #If it is equal to biggest value append it list, so it can be referenced in backtracking
-                elif matrix[i][j] == biggest_value:
-                    biggest_value_pos.append((i, j))
+        if affine_gaping ==0:
+            matrix,biggest_value_pos = self._generate_score_matrix(n,m)
+        else:
+            P,Q,matrix,biggest_value_pos = self._generate_score_matrix_affine(n,m,gap_enlargement)
 
         alignments = []
         #traceback local alignment for every cell that has the biggest value
