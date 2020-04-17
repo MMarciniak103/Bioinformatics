@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from textwrap import wrap
 from matplotlib.lines import Line2D
+from tkinter import filedialog
+
 
 class LocalAlignmentWindow(tk.Toplevel):
     def __init__(self, master, *args, **kwargs):
@@ -77,7 +79,7 @@ class LocalAlignmentWindow(tk.Toplevel):
                                               bg=master.LIME,command=lambda:self.predict_local_alignemnt(master))
         self.global_alignment_btn.place(relx=0.5, rely=0.15, relwidth=0.3, relheight=0.4, anchor='n')
 
-        self.save_btn = tk.Button(self.alignment_btn_frame, text="SAVE", font=master.font_type, bg=master.LIME)
+        self.save_btn = tk.Button(self.alignment_btn_frame, text="SAVE", font=master.font_type, bg=master.LIME,command=lambda :self.save_alignment())
         self.save_btn.place(relx=0.5, rely=0.65, relwidth=0.3, relheight=0.4, anchor='n')
 
 
@@ -115,7 +117,9 @@ class LocalAlignmentWindow(tk.Toplevel):
         #Find all optimal alignments and score associated with them
         self.alignments,score,self.score_matrix,self.path_matrix = LA.predict_alignment(affine_flag,enlargement_cost)
         align_text_placeholder = "alignment" if len(self.alignments) == 1 else "alignments"
-        self.print_text = f"Found {len(self.alignments)} optimal local {align_text_placeholder}.\n" \
+        self.print_text = f"seq1: {self.wrap_text(self.master.sequences[0].get_sequence_name())}\n" \
+                          f"seq2: {self.wrap_text(self.master.sequences[1].get_sequence_name())}\n" \
+                          f"Found {len(self.alignments)} optimal local {align_text_placeholder}.\n" \
                           f"Score value is: {score}"
         self.table_label['text'] = self.print_text
         plt.close('all')
@@ -179,3 +183,32 @@ class LocalAlignmentWindow(tk.Toplevel):
 
     def wrap_text(self,text):
         return '\n'.join(wrap(text,50))
+
+    def _prepare_save_content(self):
+        content =   f"seq1: {self.wrap_text(self.master.sequences[0].get_sequence_name())}\n" \
+                    f"seq2: {self.wrap_text(self.master.sequences[1].get_sequence_name())}\n" \
+            f"--------------------------------------------------------------------------------------------------------\n"
+        for alignments in self.alignments:
+            aln1,aln2,aln3 = alignments
+            align_content = f"{aln1}\n" \
+            f"{aln2}\n" \
+            f"{aln3}\n" \
+            f"--------------------------------------------------------------------------------------------------------\n"
+            content = content + align_content
+        return content
+
+    def save_alignment(self):
+        if len(self.alignments)== 0:
+            tk.messagebox.showerror("ERROR", "There is no alignment!")
+            return
+
+        f = filedialog.asksaveasfile(mode='w', defaultextension=".txt")
+        if f is None:  # If user didn't choose any file
+            return
+        
+        
+        save_text = self._prepare_save_content()
+
+        for line in save_text:
+            f.write(line)
+        f.close()
