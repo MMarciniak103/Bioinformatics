@@ -139,7 +139,7 @@ class GlobalAlignmentWindow(tk.Toplevel):
         plt.close('all')
         fig = plt.figure()
         sns.heatmap(self.alignment_matrix, annot=self.path_matrix, fmt='')
-        path_mark = Line2D([0], [0], color='w', marker='x', linewidth=0)
+        path_mark = Line2D([0], [0], color='w', marker='X', linewidth=0)
         plt.legend([path_mark], ['alignment path'])
         plt.title('Global Alignment')
         plt.xlabel(self.wrap_text(self.master.sequences[0].get_sequence_name()))

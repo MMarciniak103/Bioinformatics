@@ -1,13 +1,38 @@
 import tkinter as tk
-import numpy as np
 from alignment_algorithms.local_alignment_impl import LocalAlignment
-from collections import defaultdict
+import matplotlib.pyplot as plt
+import seaborn as sns
+from textwrap import wrap
+from matplotlib.lines import Line2D
 
 class LocalAlignmentWindow(tk.Toplevel):
     def __init__(self, master, *args, **kwargs):
         tk.Toplevel.__init__(self, master, *args, *kwargs)
         self.height = 700
         self.width = 700
+
+        self.alignments = []
+        self.print_text = ""
+        self.score_matrix = None
+        self.path_matrix = None
+
+        self.mappings = {0:'A',1:'C',2:'T',3:'G',4:'U',5:'-'}
+        # Default substitution matrix values
+        self.substitution_matrix = {
+            'A': {'A': 1, 'C': -1, 'T': -1, 'G': -1, 'U': -1, '-': -3},
+
+            'C': {'A': -1, 'C':1, 'T': -1, 'G':  -1, 'U': -1, '-':-3},
+
+            'T': {'A': -1, 'C': -1, 'T': 1, 'G': -1, 'U': -1, '-': -3},
+
+            'G': {'A': -1, 'C': -1, 'T': -1, 'G': 1, 'U': -1, '-': -3},
+
+            'U': {'A': -1, 'C': -1, 'T': -1, 'G': -1, 'U': 1, '-': -3},
+
+            '-': {'A':-3, 'C': -3, 'T': -3, 'G': -3, 'U': -3, '-':-3}
+        }
+
+
 
         self.resizable(False, False)
 
@@ -36,11 +61,13 @@ class LocalAlignmentWindow(tk.Toplevel):
         self.affine_label = tk.Label(self.smatrix_frame, text='Enlargement cost', bg=master.LIME, font=master.font_type)
         self.affine_entry = tk.Entry(self.smatrix_frame, font=master.font_type)
 
-        # ------------------------------------Table containing alignment informations-----------------------------------
+        # ------------------------------------Table containing alignment information-----------------------------------
         self.table_frame = tk.Frame(self, bg=master.BG_COLOR)
         self.table_frame.place(relx=0.5, rely=0.5, relwidth=0.7, relheight=0.35, anchor='n')
         self.table_label = tk.Label(self.table_frame, bg=master.LIME, font=master.font_type)
         self.table_label.place(relwidth=1.0, relheight=1.0)
+
+
 
         # ------------------------  Widgets for alignment plot and save button selection -------------------------------
         self.alignment_btn_frame = tk.Frame(self, bg=master.BG_COLOR, bd=5)
@@ -55,20 +82,6 @@ class LocalAlignmentWindow(tk.Toplevel):
 
 
     def predict_local_alignemnt(self,master):
-        mappings = {0:'A',1:'C',2:'T',3:'G',4:'U',5:'-'}
-        substitution_matrix = {
-            'A': {'A': 1, 'C': 1, 'T': 1, 'G': 1, 'U': 1, '-': 1},
-
-            'C': {'A': 1, 'C':1, 'T': 1, 'G':  1, 'U': 1, '-':1},
-
-            'T': {'A': 1, 'C': 1, 'T': 1, 'G': 1, 'U': 1, '-': 1},
-
-            'G': {'A': 1, 'C': 1, 'T': 1, 'G': 1, 'U': 1, '-': 1},
-
-            'U': {'A': 1, 'C': 1, 'T': 1, 'G': 1, 'U': 1, '-': 1},
-
-            '-': {'A':1, 'C': 1, 'T': 1, 'G': 1, 'U': 1, '-':1}
-        }
 
         try:
             for i in range(len(self.smatrix_entries)):
@@ -77,16 +90,19 @@ class LocalAlignmentWindow(tk.Toplevel):
                         tk.messagebox.showerror("ERROR", "You must provide sub cost for every possible state!")
                         return
                     else:
-                        substitution_matrix[mappings[i]][mappings[j]] = float(self.smatrix_entries[i][j].get())
+                        self.substitution_matrix[self.mappings[i]][self.mappings[j]] = float(self.smatrix_entries[i][j].get())
                         # substitution_matrix[mappings[i]][mappings[j]]= self.smatrix_entries[i][j].get()
         except Exception:
             tk.messagebox.showerror("ERROR", "There was an error while parsing matrix values!")
             return
 
+        self.alignments = []
+
         enlargement_cost = 0
 
         affine_flag = self.affine_flag.get()
 
+        # Check if user wants to use affine cost for gaps or linear one.
         if affine_flag == 1:
             try:
                 enlargement_cost = float(self.affine_entry.get())
@@ -94,11 +110,25 @@ class LocalAlignmentWindow(tk.Toplevel):
                 tk.messagebox.showerror("ERROR","Ivalid value for enlargement cost!")
                 return
 
-        LA = LocalAlignment(master.sequences,substitution_matrix)
+        LA = LocalAlignment(master.sequences,self.substitution_matrix)
 
-        alignments = LA.predict_alignment(affine_flag,enlargement_cost)
+        #Find all optimal alignments and score associated with them
+        self.alignments,score,self.score_matrix,self.path_matrix = LA.predict_alignment(affine_flag,enlargement_cost)
+        align_text_placeholder = "alignment" if len(self.alignments) == 1 else "alignments"
+        self.print_text = f"Found {len(self.alignments)} optimal local {align_text_placeholder}.\n" \
+                          f"Score value is: {score}"
+        self.table_label['text'] = self.print_text
+        plt.close('all')
+        fig = plt.figure()
+        sns.heatmap(self.score_matrix, annot=self.path_matrix,fmt='',annot_kws={"color": 'aqua'})
+        path_mark = Line2D([0], [0], color='w', marker='x', linewidth=0)
+        plt.legend([path_mark], ['alignment path'])
+        plt.title('Local Alignment')
+        plt.xlabel(self.wrap_text(master.sequences[0].get_sequence_name()))
+        plt.ylabel(self.wrap_text(master.sequences[1].get_sequence_name()))
+        plt.tight_layout()
+        plt.show()
 
-        print(alignments)
 
 
     def _create_smatrix_labels(self, frame, bg_color, font):
@@ -122,7 +152,8 @@ class LocalAlignmentWindow(tk.Toplevel):
 
     def _create_smatrix_entries(self, frame, font):
         """
-        Creates entry for every cell in substitution matrix. It also put their references in list with a shape (6,6)
+        Creates entry for every cell in substitution matrix. It also put their references in list with a shape (6,6).
+        It sets default values to be equal with substitution matrix contained in program memory.
         :param frame: fram upon which entries would be placed
         :param font: font type
         :return:
@@ -132,6 +163,8 @@ class LocalAlignmentWindow(tk.Toplevel):
             for j in range(6):
                 entry = tk.Entry(frame, font=font)
                 entry.place(relx=0.3 + j * 0.1, rely=0.2 + i * 0.1, relwidth=0.1, relheight=0.1, anchor='n')
+                value = self.substitution_matrix[self.mappings[i]][self.mappings[j]]
+                entry.insert(value,str(value))
                 row.append(entry)
             self.smatrix_entries.append(row)
 
@@ -142,3 +175,7 @@ class LocalAlignmentWindow(tk.Toplevel):
         else:
             self.affine_label.place_forget()
             self.affine_entry.place_forget()
+
+
+    def wrap_text(self,text):
+        return '\n'.join(wrap(text,50))
