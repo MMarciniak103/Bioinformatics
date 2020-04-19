@@ -58,7 +58,7 @@ class LocalAlignment:
         #Follow path while cell values are bigger than 0.
         while matrix[i][j] > 0:
             if ((i > 0 and j > 0 and (
-                    matrix[i][j] == matrix[i - 1][j - 1] + np.max([self.substitution_matrix[self.y[i - 1]][self.x[j - 1]], 0])))):
+                    matrix[i][j] == np.max([matrix[i - 1][j - 1] + self.substitution_matrix[self.y[i - 1]][self.x[j - 1]], 0])))):
                 aln1 = self.x[j - 1] + aln1
                 aln2 = self.y[i - 1] + aln2
                 if self.x[j-1] == self.y[i-1]:
@@ -70,7 +70,7 @@ class LocalAlignment:
                 j -= 1
             else:
                 # Check horizontal way
-                if ((i > 0) and (matrix[i][j] == matrix[i - 1][j] +  np.max([self.substitution_matrix['-'][self.y[i - 1]],0]))):
+                if ((i > 0) and (matrix[i][j] == np.max([matrix[i - 1][j] +  self.substitution_matrix['-'][self.y[i - 1]],0]))):
                     aln1 = "-" + aln1
                     aln2 = self.y[i - 1] + aln2
                     aln3 = " "+ aln3
