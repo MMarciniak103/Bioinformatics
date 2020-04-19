@@ -26,6 +26,7 @@ class LocalAlignment:
         self.y = self.sequences[1].get_sequence()
         self.x = self.sequences[0].get_sequence()
         self.substitution_matrix = substitution_matrix
+        self.path_mark = 'X'
 
     def get_score(self,matrix, i, j):
         '''
@@ -40,44 +41,56 @@ class LocalAlignment:
                        matrix[i][j - 1] + self.substitution_matrix['-'][self.x[j - 1]],
                        0])
 
-    def find_alignment(self,matrix, starting_pos):
+    def find_alignment(self,matrix, starting_pos,path_matrix):
         """
         Find local alignment of 2 sequences starting from given position.
         It is done with Smith-Waterman algorithm
         :matrix: matrix containing score of each possible state.
         :param starting_pos: cell that is a starting point for algorithm
+        :param path_matrix: matrix containing alignments paths
         :return: local alignment of 2 sequences for given starting point
         """
         aln1 = ''
         aln2 = ''
+        aln3 = ''
         i, j = starting_pos
+        path_matrix[i][j] = self.path_mark
         #Follow path while cell values are bigger than 0.
         while matrix[i][j] > 0:
             if ((i > 0 and j > 0 and (
                     matrix[i][j] == np.max([matrix[i - 1][j - 1] + self.substitution_matrix[self.y[i - 1]][self.x[j - 1]], 0])))):
                 aln1 = self.x[j - 1] + aln1
                 aln2 = self.y[i - 1] + aln2
+                if self.x[j-1] == self.y[i-1]:
+                    aln3 = "|" + aln3
+                else:
+                    aln3 = "*"+aln3
+                path_matrix[i-1][j-1] = self.path_mark
                 i -= 1
                 j -= 1
             else:
                 # Check horizontal way
-                if ((i > 0) and (matrix[i][j] == matrix[i - 1][j] + np.max([0, self.substitution_matrix['-'][self.y[i - 1]]]))):
+                if ((i > 0) and (matrix[i][j] == np.max(matrix[i - 1][j] +  self.substitution_matrix['-'][self.y[i - 1]],0))):
                     aln1 = "-" + aln1
                     aln2 = self.y[i - 1] + aln2
+                    aln3 = " "+ aln3
+                    path_matrix[i - 1][j] = self.path_mark
                     i -= 1
                 # Check vertical way
                 else:
                     aln1 = self.x[j - 1] + aln1
                     aln2 = "-" + aln2
+                    aln3 = " " + aln3
+                    path_matrix[i][j-1] = self.path_mark
                     j -= 1
-        return [aln1, aln2]
+        return [aln1, aln3, aln2]
 
     def _generate_score_matrix(self, n, m):
         """
         Generates score matrix for linear gap penalty - Smith-Waterman Algorithm
         :param n: rows number - length of 1 sequence
         :param m: columns number - length of 2 sequence
-        :return: calculated score matrix and list containing positions of biggest values
+        :return: calculated score matrix ,list containing positions of biggest values, score of alignment
         """
         matrix = np.zeros((n + 1, m + 1))
 
@@ -98,7 +111,7 @@ class LocalAlignment:
                 elif matrix[i][j] == biggest_value:
                     biggest_value_pos.append((i, j))
 
-        return (matrix, biggest_value_pos)
+        return (matrix, biggest_value_pos,biggest_value)
 
     def _affine_penalty(self,k,gap_open,gap_enlargement):
         return gap_open + gap_enlargement * k
@@ -109,12 +122,13 @@ class LocalAlignment:
         :param n: rows number - length of 1 sequence
         :param m: columns number  - length of 2 sequence
         :param gap_enlargement: gap enlargement cost value
-        :return: 3 matrices used by algorithm to calculate final matrix score and list containing positions of biggest
-        values
+        :return: 3 matrices used by algorithm to calculate final score matrix,list containing positions of biggest
+        score, alignment score
         """
         matrix = np.zeros((n + 1, m + 1))
         P = np.zeros((n + 1, m + 1))
         Q = np.zeros((n + 1, m + 1))
+
 
         for i in range(1, P.shape[1]):
             P[0][i] = -np.inf
@@ -150,25 +164,26 @@ class LocalAlignment:
                 elif matrix[i][j] == biggest_value:
                     biggest_value_pos.append((i, j))
 
-        return (P,Q,matrix,biggest_value_pos)
+        return (P,Q,matrix,biggest_value_pos,biggest_value)
 
     def predict_alignment(self,affine_gaping = 0,gap_enlargement=0):
         """
         Find possible local alignments of 2 sequences
-        :return: list containing all alignments found by algorithm.
+        :return: list containing all alignments found by algorithm and score value of this alignment. It also returns
+        score matrix and path_matrix containing alignments path.
         """
         n = len(self.y)
         m = len(self.x)
-
+        path_matrix =  np.array([['' for i in range(m+1)] for j in range(n+1)]) ##this matrix contains optimal alignments paths
 
         if affine_gaping ==0:
-            matrix,biggest_value_pos = self._generate_score_matrix(n,m)
+            matrix,biggest_value_pos,score = self._generate_score_matrix(n,m)
         else:
-            P,Q,matrix,biggest_value_pos = self._generate_score_matrix_affine(n,m,gap_enlargement)
+            P,Q,matrix,biggest_value_pos,score = self._generate_score_matrix_affine(n,m,gap_enlargement)
 
         alignments = []
         #traceback local alignment for every cell that has the biggest value
         for pos in biggest_value_pos:
-            alignments.append(self.find_alignment(matrix, pos))
+            alignments.append(self.find_alignment(matrix, pos,path_matrix))
 
-        return alignments
+        return alignments,score,matrix,path_matrix
