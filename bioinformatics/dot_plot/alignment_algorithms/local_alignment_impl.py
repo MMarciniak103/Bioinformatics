@@ -70,7 +70,7 @@ class LocalAlignment:
                 j -= 1
             else:
                 # Check horizontal way
-                if ((i > 0) and (matrix[i][j] == np.max(matrix[i - 1][j] +  self.substitution_matrix['-'][self.y[i - 1]],0))):
+                if ((i > 0) and (matrix[i][j] == np.max([matrix[i - 1][j] +  self.substitution_matrix['-'][self.y[i - 1]],0]))):
                     aln1 = "-" + aln1
                     aln2 = self.y[i - 1] + aln2
                     aln3 = " "+ aln3
