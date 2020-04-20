@@ -83,6 +83,26 @@ class LocalAlignmentWindow(tk.Toplevel):
         self.save_btn.place(relx=0.5, rely=0.65, relwidth=0.3, relheight=0.4, anchor='n')
 
 
+    def _validate_entries_values(self):
+        """
+        Checks if all values passed as an elements of substitution matrix are valid. If they're not, the exception will
+        be thrown. It checks if given value can be parsed to number format and if substitution and gaps have bigger value
+        than identities.
+        :return:
+        """
+        for i in range(len(self.smatrix_entries)):
+            for j in range(len(self.smatrix_entries[i])):
+                if self.smatrix_entries[i][j].get() == '':
+                    tk.messagebox.showerror("ERROR", "You must provide sub cost for every possible state!")
+                    raise Exception
+                elif  j != i :
+                    for k in range(5):
+                        if int(self.smatrix_entries[i][j].get()) > int(self.smatrix_entries[k][k].get()):
+                            tk.messagebox.showerror("ERROR","Gaps and substitutions cannot have bigger value than identities")
+                            raise Exception
+                else:
+                    self.substitution_matrix[self.mappings[i]][self.mappings[j]] = float(self.smatrix_entries[i][j].get())
+
 
     def predict_local_alignemnt(self,master):
         """
@@ -91,18 +111,10 @@ class LocalAlignmentWindow(tk.Toplevel):
         :param master: parent frame of this window
         """
         try:
-            for i in range(len(self.smatrix_entries)):
-                for j in range(len(self.smatrix_entries[i])):
-                    if self.smatrix_entries[i][j].get() == '':
-                        tk.messagebox.showerror("ERROR", "You must provide sub cost for every possible state!")
-                        return
-                    else:
-                        self.substitution_matrix[self.mappings[i]][self.mappings[j]] = float(self.smatrix_entries[i][j].get())
-                        # substitution_matrix[mappings[i]][mappings[j]]= self.smatrix_entries[i][j].get()
+            self._validate_entries_values()
         except Exception:
             tk.messagebox.showerror("ERROR", "There was an error while parsing matrix values!")
             return
-
         self.alignments = []
         self.score_matrix = None
         self.path_matrix = None
