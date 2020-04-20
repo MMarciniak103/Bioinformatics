@@ -5,7 +5,7 @@ import seaborn as sns
 from textwrap import wrap
 from matplotlib.lines import Line2D
 from tkinter import filedialog
-
+from tkinter import StringVar
 
 class LocalAlignmentWindow(tk.Toplevel):
     def __init__(self, master, *args, **kwargs):
@@ -83,8 +83,13 @@ class LocalAlignmentWindow(tk.Toplevel):
         self.save_btn.place(relx=0.5, rely=0.65, relwidth=0.3, relheight=0.4, anchor='n')
 
 
-    def predict_local_alignemnt(self,master):
 
+    def predict_local_alignemnt(self,master):
+        """
+        Method that calls LocalAlignment prediction method. It is used to find local alignment of two given sequences.
+        After sequences are found it pops up heat-map containing score information and path of optimal local alignment.
+        :param master: parent frame of this window
+        """
         try:
             for i in range(len(self.smatrix_entries)):
                 for j in range(len(self.smatrix_entries[i])):
@@ -157,21 +162,35 @@ class LocalAlignmentWindow(tk.Toplevel):
             label.place(relx=0.3 + i * 0.1, rely=0.1, relwidth=0.1, relheight=0.1, anchor='n')
             label['text'] = symbols[i]
 
+    def _contain_symetry(self,event):
+        """
+        Callback method that is called after substitution matrix entry value is changed. It preserves matrix symmetry by
+        changing symmetrical element value to the changed one.
+        :param event: container for event information
+        """
+        value = event.widget.get()
+        for i in range(len(self.smatrix_entries)):
+            for j in range(len(self.smatrix_entries[i])):
+                if (event.widget == self.smatrix_entries[i][j]):
+                    self.smatrix_entries[j][i].delete(0,'end')
+                    self.smatrix_entries[j][i].insert(0,str(value))
+
     def _create_smatrix_entries(self, frame, font):
         """
         Creates entry for every cell in substitution matrix. It also put their references in list with a shape (6,6).
         It sets default values to be equal with substitution matrix contained in program memory.
-        :param frame: fram upon which entries would be placed
+        :param frame: frame upon which entries would be placed
         :param font: font type
         :return:
         """
         for i in range(6):
             row = []
             for j in range(6):
+                value = self.substitution_matrix[self.mappings[i]][self.mappings[j]]
                 entry = tk.Entry(frame, font=font)
                 entry.place(relx=0.3 + j * 0.1, rely=0.2 + i * 0.1, relwidth=0.1, relheight=0.1, anchor='n')
-                value = self.substitution_matrix[self.mappings[i]][self.mappings[j]]
                 entry.insert(value,str(value))
+                entry.bind("<Return>",self._contain_symetry)
                 row.append(entry)
             self.smatrix_entries.append(row)
 
