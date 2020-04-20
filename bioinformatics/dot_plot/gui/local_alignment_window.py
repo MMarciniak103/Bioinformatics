@@ -99,6 +99,9 @@ class LocalAlignmentWindow(tk.Toplevel):
             return
 
         self.alignments = []
+        self.score_matrix = None
+        self.path_matrix = None
+        self.print_text = ""
 
         enlargement_cost = 0
 
@@ -125,7 +128,7 @@ class LocalAlignmentWindow(tk.Toplevel):
         plt.close('all')
         fig = plt.figure()
         sns.heatmap(self.score_matrix, annot=self.path_matrix,fmt='',annot_kws={"color": 'aqua'})
-        path_mark = Line2D([0], [0], color='w', marker='x', linewidth=0)
+        path_mark = Line2D([0], [0], color='aqua', marker='x', linewidth=0)
         plt.legend([path_mark], ['alignment path'])
         plt.title('Local Alignment')
         plt.xlabel(self.wrap_text(master.sequences[0].get_sequence_name()))
