@@ -54,6 +54,8 @@ class LocalAlignment:
         aln2 = ''
         aln3 = ''
         i, j = starting_pos
+        findings_position = [(j,i)] #positions of alignment fragments in original sequences. ( i - 2nd seq, j - 1st one)
+        ending_pos = None
         self.path_matrix[i][j] = self.path_mark
         #Follow path while cell values are bigger than 0.
         while matrix[i][j] > 0:
@@ -68,6 +70,7 @@ class LocalAlignment:
                 self.path_matrix[i-1][j-1] = self.path_mark
                 i -= 1
                 j -= 1
+                ending_pos = (j,i)
             else:
                 # Check horizontal way
                 if ((i > 0) and (matrix[i][j] == np.max([matrix[i - 1][j] +  self.substitution_matrix['-'][self.y[i - 1]],0]))):
@@ -76,6 +79,7 @@ class LocalAlignment:
                     aln3 = " "+ aln3
                     self.path_matrix[i - 1][j] = self.path_mark
                     i -= 1
+                    ending_pos = (j,i)
                 # Check vertical way
                 else:
                     aln1 = self.x[j - 1] + aln1
@@ -83,7 +87,9 @@ class LocalAlignment:
                     aln3 = " " + aln3
                     self.path_matrix[i][j-1] = self.path_mark
                     j -= 1
-        return [aln1, aln3, aln2]
+                    ending_pos =  (j,i)
+        findings_position.append(ending_pos)
+        return [aln1, aln3, aln2],findings_position
 
     def _generate_score_matrix(self, n, m):
         """
@@ -182,8 +188,11 @@ class LocalAlignment:
             P,Q,matrix,biggest_value_pos,score = self._generate_score_matrix_affine(n,m,gap_enlargement)
 
         alignments = []
+        findings_positions = []
         #traceback local alignment for every cell that has the biggest value
         for pos in biggest_value_pos:
-            alignments.append(self.find_alignment(matrix, pos))
+            alignment, findings_pos =self.find_alignment(matrix, pos)
+            alignments.append(alignment)
+            findings_positions.append(findings_pos)
 
-        return alignments,score,matrix,self.path_matrix
+        return alignments,score,matrix,self.path_matrix,findings_positions

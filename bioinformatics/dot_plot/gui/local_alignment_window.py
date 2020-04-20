@@ -17,6 +17,7 @@ class LocalAlignmentWindow(tk.Toplevel):
         self.print_text = ""
         self.score_matrix = None
         self.path_matrix = None
+        self.findings_positions = []
 
         self.mappings = {0:'A',1:'C',2:'T',3:'G',4:'U',5:'-'}
         # Default substitution matrix values
@@ -119,6 +120,7 @@ class LocalAlignmentWindow(tk.Toplevel):
         self.score_matrix = None
         self.path_matrix = None
         self.print_text = ""
+        self.findings_positions = []
 
         enlargement_cost = 0
 
@@ -135,7 +137,7 @@ class LocalAlignmentWindow(tk.Toplevel):
         LA = LocalAlignment(master.sequences,self.substitution_matrix)
 
         #Find all optimal alignments and score associated with them
-        self.alignments,score,self.score_matrix,self.path_matrix = LA.predict_alignment(affine_flag,enlargement_cost)
+        self.alignments,score,self.score_matrix,self.path_matrix,self.findings_positions = LA.predict_alignment(affine_flag,enlargement_cost)
         align_text_placeholder = "alignment" if len(self.alignments) == 1 else "alignments"
         self.print_text = f"seq1: {self.wrap_text(self.master.sequences[0].get_sequence_name())}\n" \
                           f"seq2: {self.wrap_text(self.master.sequences[1].get_sequence_name())}\n" \
@@ -222,9 +224,11 @@ class LocalAlignmentWindow(tk.Toplevel):
         content =   f"seq1: {self.wrap_text(self.master.sequences[0].get_sequence_name())}\n" \
                     f"seq2: {self.wrap_text(self.master.sequences[1].get_sequence_name())}\n" \
             f"--------------------------------------------------------------------------------------------------------\n"
-        for alignments in self.alignments:
+        for i,alignments in enumerate(self.alignments):
             aln1,aln2,aln3 = alignments
-            align_content = f"{aln1}\n" \
+            align_content = f"seq1: {self.findings_positions[i][1][0]}-{self.findings_positions[i][0][0]}\n" \
+                            f"seq2: {self.findings_positions[i][1][1]}-{self.findings_positions[i][0][1]}\n" \
+                            f""f"{aln1}\n" \
             f"{aln2}\n" \
             f"{aln3}\n" \
             f"--------------------------------------------------------------------------------------------------------\n"
@@ -235,6 +239,7 @@ class LocalAlignmentWindow(tk.Toplevel):
         if len(self.alignments)== 0:
             tk.messagebox.showerror("ERROR", "There is no alignment!")
             return
+
 
         f = filedialog.asksaveasfile(mode='w', defaultextension=".txt")
         if f is None:  # If user didn't choose any file
