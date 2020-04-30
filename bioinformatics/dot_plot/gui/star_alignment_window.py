@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 from tkinter import ttk
-
+from alignment_algorithms.star_alignment_impl import StarAlignment
 
 class StarAlignmentWindow(tk.Toplevel):
     def __init__(self,master,*args,**kwargs):
@@ -38,3 +38,24 @@ class StarAlignmentWindow(tk.Toplevel):
         self.match_cost_entry = tk.Entry(self.cost_frame, font=master.font_type)
         self.match_cost_entry.place(relx=0.75, rely=0.5, relwidth=0.2, relheight=0.4, anchor='n')
 
+        self.alignment_btn_frame = tk.Frame(self, bg=master.BG_COLOR, bd=5)
+        self.alignment_btn_frame.place(relx=0.5, rely=0.8, relwidth=0.9, relheight=0.15, anchor='n')
+
+        self.star_alignment_btn = tk.Button(self.alignment_btn_frame, text='ALIGNMENT', font=master.font_type, bg=master.LIME, command=lambda:self.star_alignment(master))
+        self.star_alignment_btn.place(relx=0.5, rely=0.15, relwidth=0.3, relheight=0.4, anchor='n')
+
+
+
+    def star_alignment(self,master):
+
+        self.alignments = []
+
+        indent_cost = self.indent_cost_entry.get()
+        substitution_cost = self.substitution_cost_entry.get()
+        match_cost = self.match_cost_entry.get()
+        if (indent_cost == '' or substitution_cost == '' or match_cost == ''):
+            tk.messagebox.showerror("ERROR", "Provide cost value for all possible states!")
+            return
+
+        sa = StarAlignment(master.sequences)
+        sa.predict_alignment(float(indent_cost),float(substitution_cost),float(match_cost))
