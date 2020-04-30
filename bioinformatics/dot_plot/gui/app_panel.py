@@ -12,11 +12,11 @@ import re
 from textwrap import wrap
 
 
-class AppPanel(tk.Tk):
+class AppPanel(tk.Toplevel):
 
 
-	def __init__(self,height=800,width=600,*args,**kwargs):
-		tk.Tk.__init__(self,*args,**kwargs)
+	def __init__(self,master,height=800,width=600,*args,**kwargs):
+		tk.Toplevel.__init__(self,*args,**kwargs)
 		self.height = height
 		self.width = width
 
@@ -27,9 +27,9 @@ class AppPanel(tk.Tk):
 		self.sequences = []
 		self.top_windows = []
 
-		self.font_type = ('Tahoma',8,'bold')
-		self.BG_COLOR = "#212121"
-		self.LIME = "#76FF03"
+		self.font_type = master.font_type
+		self.BG_COLOR = master.BG_COLOR
+		self.LIME = master.LIME
 
 		canvas = tk.Canvas(self,height=self.height,width=self.width)
 		canvas.pack()
@@ -72,7 +72,7 @@ class AppPanel(tk.Tk):
 
 
 		#Button that opens filechooser dialog
-		self.filechooser_btn = tk.Button(self.frame,text='Read File',bg=self.LIME,font=self.font_type,command=lambda:self.read_file())
+		self.filechooser_btn = tk.Button(self.frame,text='Read File',bg=self.LIME,font=self.font_type,command=lambda: read_file(self))
 		# self.filechooser_btn.place(relx=0.5,rely=0.3,relwidth=0.15,relheight=0.4,anchor='n')
 
 		#Custom sequences entries
@@ -199,31 +199,6 @@ class AppPanel(tk.Tk):
 		fig.tight_layout()
 		plt.show()
 
-	def read_file(self):
-		"""
-		Method that reads selected file content and prepocess it before passing it to parser object.Selected item must be in fasta format.
-		:return:
-		"""
-		filename = askopenfilename(filetypes=[("FASTA files","*.fasta")])
-		if filename:
-			if filename[-5:] != 'fasta':
-				tk.messagebox.showerror("ERROR","Requiered FASTA file!")
-				return 
-			with open(filename,'r') as f:
-				content = f.readlines()
-				parser = FastaParser()
-				for i,line in enumerate(content):
-					content[i] = line.strip()
-					if content[i] == '':
-						del content[i]
-				try:
-					self.sequences = parser.parse_data(content)
-				except InvalidSequenceException:
-					tk.messagebox.showerror("ERROR","Requiered 2 sequences in file!")
-
-		self.matrix = None
-
-		self._hide(self.url_label_1)
 
 
 	def make_request(self):
@@ -328,3 +303,35 @@ class AppPanel(tk.Tk):
 			self.second_seq_label.place(relx=0.5,rely=0.4,relwidth=0.9,relheight=0.05,anchor='n')
 
 			self.custom_seq_btn.place(relx=0.5,rely=0.6,relwidth=0.4,relheight=0.1,anchor='n')
+
+
+
+def read_file(context):
+	"""
+	Method that reads selected file content and prepocess it before passing it to parser object.Selected item must be in fasta format.
+	:return:
+	"""
+	filename = askopenfilename(filetypes=[("FASTA files","*.fasta")])
+	if filename:
+		if filename[-5:] != 'fasta':
+			tk.messagebox.showerror("ERROR","Requiered FASTA file!")
+			return
+		with open(filename,'r') as f:
+			content = f.readlines()
+			parser = FastaParser()
+			for i,line in enumerate(content):
+				content[i] = line.strip()
+				if content[i] == '':
+					del content[i]
+			try:
+				context.sequences = parser.parse_data(content)
+			except InvalidSequenceException:
+				tk.messagebox.showerror("ERROR","Requiered 2 sequences in file!")
+
+	context.matrix = None
+	if hasattr(context, 'url_label_1'):
+		context._hide(context.url_label_1)
+
+	for seq in context.sequences:
+		print(seq)
+	# print(context.sequences)
