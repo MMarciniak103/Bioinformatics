@@ -29,12 +29,13 @@ class GlobalAlignment:
                        matrix[i][j - 1] + insertion])
 
 
-    def predict_alignment(self,insertion_cost=1,deletion_cost=1,substitution_cost=1,match_cost=0):
+    def predict_alignment(self,insertion_cost=1,deletion_cost=1,substitution_cost=1,match_cost=0,return_matricies=False):
         '''
         Find Global Alignment of 2 sequences
         :param insertion_cost: cost of insertion
         :param deletion_cost: cost of deletion
         :param substitution_cost: cost of substitution
+        :param return_matricies:  flag indicating if score matrix and path matrix should be returned
         :return: alignments, score of alignment, no. gaps, no. identity positions and visual traced path
         '''
         n = len(self.sequences[1].get_sequence())
@@ -59,10 +60,12 @@ class GlobalAlignment:
         #-------------------------------- TRACE BACK FOR OPTIMAL ALIGNMENT ------------------------------------------
         # This implementation is favoring substitution over insertion or deletion
         path_mark = 'x'
-        path_matrix = np.array([['' for i in range(m+1)] for j in range(n+1)]) #this matrix contains optimal alignment path
+        if return_matricies:
+            path_matrix = np.array([['' for i in range(m+1)] for j in range(n+1)]) #this matrix contains optimal alignment path
         i = n
         j = m
-        path_matrix[i][j]= path_mark
+        if return_matricies:
+            path_matrix[i][j]= path_mark
         aln1 = ""
         aln2 = ""
         aln3 = ""
@@ -85,7 +88,8 @@ class GlobalAlignment:
                     else:
                         score += substitution_cost
                         aln3 = "*" + aln3
-                    path_matrix[i-1][j-1]=path_mark
+                    if return_matricies:
+                        path_matrix[i-1][j-1]=path_mark
                     i -= 1
                     j -= 1
 
@@ -96,7 +100,8 @@ class GlobalAlignment:
                         aln2 = self.sequences[1].get_sequence()[i - 1] + aln2
                         aln3 = " " + aln3
                         score += insertion_cost
-                        path_matrix[i - 1][j] = path_mark
+                        if return_matricies:
+                            path_matrix[i - 1][j] = path_mark
                         i -= 1
                         gaps += 1
                     #Check vertical way
@@ -105,7 +110,12 @@ class GlobalAlignment:
                         aln3 = " " + aln3
                         aln2 = "-" + aln2
                         score += deletion_cost
-                        path_matrix[i][j-1] = path_mark
+                        if return_matricies:
+                            path_matrix[i][j-1] = path_mark
                         gaps += 1
                         j -= 1
-        return ([aln1,aln2,aln3],score,gaps,identity,matrix,path_matrix)
+        if return_matricies:
+            return ([aln1,aln2,aln3],score,gaps,identity,matrix,path_matrix)
+
+
+        return ([aln1,aln2,aln3],score)

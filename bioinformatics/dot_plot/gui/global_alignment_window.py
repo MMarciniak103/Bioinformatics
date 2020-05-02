@@ -130,7 +130,7 @@ class GlobalAlignmentWindow(tk.Toplevel):
         ga = GlobalAlignment(master.sequences)
         self.alignments, score, gaps, identity, self.alignment_matrix, self.path_matrix = ga.predict_alignment(
             insertion_cost=float(insertion_cost), deletion_cost=float(deletion_cost),
-            substitution_cost=float(substitution_cost), match_cost=float(match_cost))
+            substitution_cost=float(substitution_cost), match_cost=float(match_cost),return_matricies=True)
         if len(self.alignments[0]) != 0:
             cost_array = [insertion_cost, deletion_cost, substitution_cost, match_cost]
             self.format_table_data(self.alignments, score, gaps, identity, cost_array)

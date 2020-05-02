@@ -37,8 +37,8 @@ class FastaParser:
 			self.sequences.append(sequence)
 
 		#Check if there was exactly 2 sequences, if no then throw an exception
-		if len(self.sequences) != 2:
-			raise InvalidSequenceException("REQUIERED 2 SEQUENCES!")
+		# if len(self.sequences) != 2:
+		# 	raise InvalidSequenceException("REQUIERED 2 SEQUENCES!")
 
 		return self.sequences
 
