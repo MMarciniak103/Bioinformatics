@@ -216,7 +216,6 @@ class StarAlignment:
         seq_combinations = combinations(self.sequences, 2)
         indices_combinations = combinations(indices, 2)
 
-        scores = []
         all_alignments = []
         all_scores = []
 

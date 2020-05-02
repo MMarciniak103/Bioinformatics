@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
-from tkinter import ttk
+from tkinter import ttk, filedialog
 from alignment_algorithms.star_alignment_impl import StarAlignment
 
 class StarAlignmentWindow(tk.Toplevel):
@@ -55,6 +55,9 @@ class StarAlignmentWindow(tk.Toplevel):
         self.star_alignment_btn.place(relx=0.5, rely=0.15, relwidth=0.3, relheight=0.4, anchor='n')
 
 
+        self.save_btn = tk.Button(self.alignment_btn_frame, text="SAVE", font=master.font_type, bg=master.LIME,command=lambda :self.save_clustal(master))
+        self.save_btn.place(relx=0.5, rely=0.65, relwidth=0.3, relheight=0.4, anchor='n')
+
 
     def star_alignment(self,master):
 
@@ -77,3 +80,61 @@ class StarAlignmentWindow(tk.Toplevel):
                           f"[{self.opt_score} - {self.msa_score}]"
 
         self.table_label['text'] = self.print_text
+
+    def _make_clustal_markers(self,i):
+        markers = ''
+
+        for k in range(i,(i+50)):
+            if k >= len(self.alignments[0]):
+                break
+            bad = False
+            symbol = self.alignments[0][k]
+            for j in range(len(self.alignments)):
+                if self.alignments[j][k] != symbol:
+                    bad = True
+                    break
+
+            if bad:
+                markers = markers + '|'
+            else:
+                markers = markers + '*'
+
+        return markers
+
+    def _prepare_save_content(self,master):
+        sequences_len = len(self.alignments[0])
+        seq_names = [seq.get_sequence_name() for seq in master.sequences]
+
+        beggining_space = len(seq_names[0])+2
+
+        content = ""
+
+        for i in range(0,sequences_len,50):
+            for j in range(len(seq_names)):
+                content += f"{seq_names[j]}: {self.alignments[j][i:i+50]}\n"
+
+            for _ in range(beggining_space):
+                content += "|"
+            content += self._make_clustal_markers(i)
+            content += "\n"
+
+        content = content.replace("|"," ")
+
+        return content
+
+
+
+    def save_clustal(self,master):
+        if len(self.alignments) == 0:
+            tk.messagebox.showerror("ERROR", "There is no alignment!")
+            return
+
+        f = filedialog.asksaveasfile(mode='w', defaultextension=".txt")
+        if f is None:  # If user didn't choose any file
+            return
+
+        save_text = self._prepare_save_content(master)
+
+        for line in save_text:
+            f.write(line)
+        f.close()
