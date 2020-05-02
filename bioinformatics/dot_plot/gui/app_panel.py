@@ -332,6 +332,6 @@ def read_file(context):
 	if hasattr(context, 'url_label_1'):
 		context._hide(context.url_label_1)
 
-	for seq in context.sequences:
-		print(seq)
+	# for seq in context.sequences:
+	# 	print(seq)
 	# print(context.sequences)

@@ -228,7 +228,7 @@ class StarAlignment:
             all_alignments.append(alignments)
             all_scores.append(score)
 
-        print(all_alignments)
+        # print(all_alignments)
 
         all_scores = np.array(all_scores)
         # print(all_scores)
@@ -265,8 +265,10 @@ class StarAlignment:
         alignment_score = self.calculate_alignment_score(multiple_alignments, match_cost, substitution_cost,
                                                          indent_cost)
 
-        print('ALIGNMENT SCORE: ', alignment_score)
-        print(np.sum(saved_all_scores))
-
-        for align in multiple_alignments:
-            print(align)
+        # print('ALIGNMENT SCORE: ', alignment_score)
+        # print(np.sum(saved_all_scores))
+        #
+        # for align in multiple_alignments:
+        #     print(align)
+        #
+        return  multiple_alignments,alignment_score,np.sum(saved_all_scores)
