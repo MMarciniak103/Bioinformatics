@@ -182,7 +182,7 @@ class StarAlignmentWindow(tk.Toplevel):
 
         self.clustal_windows.append(win)
 
-def save_alignment(self,master):
+    def save_alignment(self,master):
         """
         Saves multiple sequences alignment in a fasta format
         :param master: master window
