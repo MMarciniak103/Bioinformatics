@@ -121,8 +121,8 @@ class StarAlignmentWindow(tk.Toplevel):
         :return: transformed text containing alignments
         """
         sequences_len = len(self.alignments[0])
-        seq_names = [seq.get_sequence_name() for seq in master.sequences]
-
+        seq_names = [seq.get_sequence_name().split('.')[0] for seq in master.sequences]
+        # seq_names = []
         beggining_space = len(seq_names[0])+2
 
         content = ""
