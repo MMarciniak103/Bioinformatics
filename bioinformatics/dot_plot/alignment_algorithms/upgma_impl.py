@@ -14,7 +14,7 @@ class UPGMA:
 
         self.sequences = sequences
 
-    def get_combinations_scores(self,combinations,indent,substitution,match,seq_hash):
+    def _get_combinations_scores(self, combinations, indent, substitution, match, seq_hash):
         """
         Finds global alignments for given combinations of sequences. It also saves its scores into score matrix.
         :param combinations: generator containing all combinations of sequences
@@ -25,12 +25,12 @@ class UPGMA:
         :return: scores matrix filled with alignments scores
         """
 
-        scores_matrix = np.zeros(len(self.sequences),len(self.sequences))
+        scores_matrix = np.zeros((len(self.sequences),len(self.sequences)))
         all_scores = []
 
         for combination in combinations:
             ga = GlobalAlignment(combination)
-            _,score = ga.predict_alignment(indent,substitution,match)
+            _,score = ga.predict_alignment(indent,indent,substitution,match)
             name1 = combination[0].get_sequence_name().split('.')[0]
             name2 = combination[1].get_sequence_name().split('.')[0]
             #Score matrix is symetrical !
@@ -60,7 +60,7 @@ class UPGMA:
 
         return connections, indices
 
-    def get_new_C_matrix(self,C, indices, connections):
+    def _get_new_C_matrix(self, C, indices, connections):
         """
         Creates new name's list.
         :param C: old name's list
@@ -77,19 +77,9 @@ class UPGMA:
         next_C.append(connections[-1][1])
         return next_C
 
-    def flatten(self,S):
-        """
-        Helper functions that uses recursion to flatten nested list.
-        :param S: nested list
-        :return: flattened list
-        """
-        if S == []:
-            return S
-        if isinstance(S[0], list):
-            return self.flatten(S[0]) + self.flatten(S[1:])
-        return S[:1] + self.flatten(S[1:])
 
-    def get_E_matrix(self,next_C,seq_hash,scores_matrix):
+
+    def _get_E_matrix(self, next_C, seq_hash, scores_matrix):
         """
         Creates new E matrix for current iteration
         :param next_C: list containing sequences names (grouped sequences represented as nested list)
@@ -105,14 +95,12 @@ class UPGMA:
                     new_E[k][l] = np.Infinity
                     continue
 
-                row_elements = []
-                columns_elements = []
                 if isinstance(item, list):
-                    row_elements = self.flatten(item)
+                    row_elements = flatten(item)
                 else:
                     row_elements = [item]
                 if isinstance(item2, list):
-                    columns_elements = self.flatten(item2)
+                    columns_elements = flatten(item2)
                 else:
                     columns_elements = [item2]
 
@@ -136,13 +124,13 @@ class UPGMA:
         """
         #Create hash table for sequences (key - seq name, value - its position in sequences list)
         seq_hash = defaultdict()
-        for i in range(self.sequences):
+        for i in range(len(self.sequences)):
             seq_hash[self.sequences[i].get_sequence_name().split('.')[0]] = i
 
         seq_combinations = combinations(self.sequences,2)
 
         #Original score matrix
-        scores_matrix = self.get_combinations_scores(seq_combinations,indent_cost,substitution_cost,match_cost,seq_hash)
+        scores_matrix = self._get_combinations_scores(seq_combinations, indent_cost, substitution_cost, match_cost, seq_hash)
 
         # C list containing names of sequences
         C = [seq.get_sequence_name().split('.')[0] for seq in self.sequences]
@@ -155,8 +143,8 @@ class UPGMA:
 
         while (len(connections) != len(self.sequences)-1):
             connections,indices = self.get_best_in_E(E,C,connections)
-            C = self.get_new_C_matrix(C,indices,connections)
-            E = self.get_E_matrix(C,seq_hash,scores_matrix)
+            C = self._get_new_C_matrix(C, indices, connections)
+            E = self._get_E_matrix(C, seq_hash, scores_matrix)
 
 
 
@@ -165,3 +153,16 @@ class UPGMA:
         print('C ', C)
         print('E ', E)
 
+        return connections,seq_hash
+
+def flatten(S):
+    """
+    Helper functions that uses recursion to flatten nested list.
+    :param S: nested list
+    :return: flattened list
+    """
+    if S == []:
+        return S
+    if isinstance(S[0], list):
+        return flatten(S[0]) + flatten(S[1:])
+    return S[:1] + flatten(S[1:])
