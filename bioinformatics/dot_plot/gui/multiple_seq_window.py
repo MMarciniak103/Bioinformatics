@@ -53,6 +53,9 @@ class MultipleSeqWindow(tk.Toplevel):
         self.star_alignment = tk.Button(self.frame, text='STAR', bg=self.LIME, font=self.font_type,command = lambda :self.open_window('STAR'))
         self.star_alignment.place(relx=0.5,rely=0.4,relwidth=0.5,relheight=0.1,anchor='n')
 
+        self.upgma = tk.Button(self.frame,text='UPGMA',bg=self.LIME,font=self.font_type)
+        self.upgma.place(relx=)
+
     def _hide(self, widget):
         widget.place_forget()
 
