@@ -5,6 +5,7 @@ from tkinter import ttk
 from api_connector.connector import APIConnector
 from gui.star_alignment_window import StarAlignmentWindow
 from gui.app_panel import read_file
+from gui.upgma_window import UpgmaWindow
 
 
 class MultipleSeqWindow(tk.Toplevel):
@@ -53,6 +54,9 @@ class MultipleSeqWindow(tk.Toplevel):
         self.star_alignment = tk.Button(self.frame, text='STAR', bg=self.LIME, font=self.font_type,command = lambda :self.open_window('STAR'))
         self.star_alignment.place(relx=0.5,rely=0.4,relwidth=0.5,relheight=0.1,anchor='n')
 
+        self.upgma = tk.Button(self.frame,text='UPGMA',bg=self.LIME,font=self.font_type,command=lambda:self.open_window('UPGMA'))
+        self.upgma.place(relx=0.5,rely=0.6,relwidth=0.5,relheight=0.1,anchor='n')
+
     def _hide(self, widget):
         widget.place_forget()
 
@@ -94,6 +98,8 @@ class MultipleSeqWindow(tk.Toplevel):
 
         if mode == 'STAR':
             alignment_window = StarAlignmentWindow(self)
+        if mode == 'UPGMA':
+            alignment_window = UpgmaWindow(self)
 
         self.windows.clear()
         self.windows.append(alignment_window)
