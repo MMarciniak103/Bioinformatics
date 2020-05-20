@@ -14,6 +14,26 @@ class UPGMA:
 
         self.sequences = sequences
 
+    def format_groups_input(self,text):
+        return f'{text}'.replace('[','(').replace(']',')')
+
+    def _get_newick(self,HISTORY_C):
+        """
+        Returns history of connections formatted in newick's format.
+        :param HISTORY_C: history of connections
+        :return: history formatted in newick's format
+        """
+        newick_txt = ''
+        for hist in reversed(HISTORY_C[-1]):
+            # hist is saved in cost,groups format -> example: 1.0,[x1,x2]
+            cost = hist[0]
+            groups = hist[1]
+            if(newick_txt == ''):
+                newick_txt+= f'{self.format_groups_input(groups)}:{cost}'
+            else:
+                newick_txt = newick_txt.replace(f'{self.format_groups_input(groups)}',f'{self.format_groups_input(groups)}:{cost}')
+
+        return newick_txt
     def _get_combinations_scores(self, combinations, indent, substitution, match, seq_hash):
         """
         Finds global alignments for given combinations of sequences. It also saves its scores into score matrix.
@@ -60,12 +80,13 @@ class UPGMA:
 
         return connections, indices
 
-    def _get_new_C_matrix(self, C, indices, connections):
+    def _get_new_C_matrix(self, C, indices, connections,HISTORY_C):
         """
         Creates new name's list.
         :param C: old name's list
         :param indices: indices of connected sequences for current iteration
         :param connections: connections list
+        :param HISTORY_C: history of all connections
         :return: new name's list.
         """
         next_C = []
@@ -74,8 +95,9 @@ class UPGMA:
                 next_C.append(elem)
 
 
+        HISTORY_C.append(connections)
         next_C.append(connections[-1][1])
-        return next_C
+        return next_C,HISTORY_C
 
 
 
@@ -140,20 +162,23 @@ class UPGMA:
         E = scores_matrix.copy() #Initialize E matrix as a copy of score matrix
         np.fill_diagonal(E,np.Infinity) # Diagnoal is filled with infinity, so that algorithm will ignore it when looking for minimum cost
 
+        HISTORY_C = []
 
         while (len(connections) != len(self.sequences)-1):
             connections,indices = self.get_best_in_E(E,C,connections)
-            C = self._get_new_C_matrix(C, indices, connections)
+            C,HISTORY_C = self._get_new_C_matrix(C, indices, connections,HISTORY_C)
             E = self._get_E_matrix(C, seq_hash, scores_matrix)
 
 
+        newick = self._get_newick(HISTORY_C)
 
         print('END')
         print('Connections ', connections)
         print('C ', C)
         print('E ', E)
+        print('newick ',newick)
 
-        return connections,seq_hash
+        return connections,seq_hash,newick
 
 def flatten(S):
     """

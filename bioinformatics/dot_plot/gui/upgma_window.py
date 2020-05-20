@@ -76,8 +76,13 @@ class UpgmaWindow(tk.Toplevel):
             tk.messagebox.showerror("ERROR", "Provide cost value for all possible states!")
             return
 
+        newick = ''
+
         upgma = UPGMA(master.sequences)
-        self.connections,self.seq_hash = upgma.create_upgma(float(indent_cost),float(substitution_cost),float(match_cost))
+        self.connections,self.seq_hash,newick = upgma.create_upgma(float(indent_cost),float(substitution_cost),float(match_cost))
+
+        self.table_label['text'] = 'NEWICK:\n'+newick
+
 
     def _mk_fork(self,x0, x1, y0, y1, new_level):
         points = [[x0, x0, x1, x1], [y0, new_level, new_level, y1]]
