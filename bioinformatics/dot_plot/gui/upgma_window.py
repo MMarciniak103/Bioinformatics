@@ -1,4 +1,5 @@
 import tkinter as tk
+from collections import defaultdict
 from tkinter.constants import *
 from tkinter import ttk, filedialog
 import matplotlib.pyplot as plt
@@ -95,6 +96,8 @@ class UpgmaWindow(tk.Toplevel):
             tk.messagebox.showerror("ERROR!","You must first create upgma dendrogram")
             return
 
+        position_hash = defaultdict()
+
         levels = [connection[0] for connection in self.connections]
         seen = []
         locations = []
@@ -109,11 +112,29 @@ class UpgmaWindow(tk.Toplevel):
                 second_elem = connection[1][1]
             # locations.append(tuple(seq_hash[elem] for elem in flatten(connection[1])[:2]))
             locations.append((self.seq_hash[first_elem], self.seq_hash[second_elem]))
+            if self.seq_hash[first_elem] not in position_hash.keys():
+                position_hash[self.seq_hash[first_elem]] = len(position_hash.values())
+            if self.seq_hash[second_elem] not in position_hash.keys():
+                position_hash[self.seq_hash[second_elem]] = len(position_hash.values())
             seen += flatten([elem for elem in flatten(connection[1])])
 
         label_map = {i: {} for i in range(len(master.sequences))}
-        for i in range(len(master.sequences)):
-            label_map[i] = {'label': master.sequences[i].get_sequence_name().split('.')[0], 'xpos': i, 'ypos': 0}
+        # for i in range(len(master.sequences)):
+        #     label_map[i] = {'label': master.sequences[i].get_sequence_name().split('.')[0], 'xpos': i, 'ypos': 0}
+
+        print('POSITION HASH: ',position_hash)
+
+        seen_location = []
+        for i in range(len(locations)):
+            print('loca: ',locations[i])
+            seq_id = locations[i]
+            for seqi in seq_id:
+                if seqi not in seen_location:
+                    seen_location.append(seqi)
+
+        for i in range(len(seen_location)):
+            label_map[i] = {'label': master.sequences[seen_location[i]].get_sequence_name().split('.')[0], 'xpos': i, 'ypos': 0}
+
 
         print('locations ', locations)
         print('label_map ', label_map)
@@ -122,6 +143,9 @@ class UpgmaWindow(tk.Toplevel):
         fig, ax = plt.subplots()
 
         for i, (new_level, (loc0, loc1)) in enumerate(zip(levels, locations)):
+
+            loc0 ,loc1 = position_hash[loc0],position_hash[loc1]
+
             print('step {0}:\t connecting ({1},{2}) at level {3}'.format(i, loc0, loc1, new_level))
 
             x0, y0 = label_map[loc0]['xpos'], label_map[loc0]['ypos']
@@ -143,7 +167,8 @@ class UpgmaWindow(tk.Toplevel):
             ax.text(*c, label_map[loc0]['label'])
 
         _xticks = np.arange(0, 6, 1)
-        _xticklabels = [*[seq.get_sequence_name().split('.')[0] for seq in master.sequences]]
+        # _xticklabels = [*[seq.get_sequence_name().split('.')[0] for seq in master.sequences]]
+        _xticklabels = [*[master.sequences[i].get_sequence_name().split('.')[0] for i in seen_location]]
 
         ax.set_xticks(_xticks)
         ax.set_xticklabels(_xticklabels)
