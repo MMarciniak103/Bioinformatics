@@ -172,11 +172,6 @@ class UPGMA:
 
         newick = self._get_newick(HISTORY_C)
 
-        print('END')
-        print('Connections ', connections)
-        print('C ', C)
-        print('E ', E)
-        print('newick ',newick)
 
         return connections,seq_hash,newick
 

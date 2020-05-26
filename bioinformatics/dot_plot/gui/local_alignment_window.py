@@ -5,7 +5,6 @@ import seaborn as sns
 from textwrap import wrap
 from matplotlib.lines import Line2D
 from tkinter import filedialog
-from tkinter import StringVar
 
 class LocalAlignmentWindow(tk.Toplevel):
     def __init__(self, master, *args, **kwargs):

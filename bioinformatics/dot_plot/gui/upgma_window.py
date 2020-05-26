@@ -1,7 +1,5 @@
 import tkinter as tk
 from collections import defaultdict
-from tkinter.constants import *
-from tkinter import ttk, filedialog
 import matplotlib.pyplot as plt
 from alignment_algorithms.upgma_impl import UPGMA,flatten
 import numpy as np
@@ -58,10 +56,6 @@ class UpgmaWindow(tk.Toplevel):
         self.show_clustal_btn = tk.Button(self.upgma_frame, text='DENDROGRAM', font=master.font_type,
                                           bg=master.LIME,command=lambda : self.show_dendrogram(master))
         self.show_clustal_btn.place(relx=0.5, rely=0.4, relwidth=0.3, relheight=0.2, anchor='n')
-        #
-        # self.save_btn = tk.Button(self.upgma_frame, text="SAVE", font=master.font_type, bg=master.LIME,
-        #                           command=lambda: self.save_alignment(master))
-        # self.save_btn.place(relx=0.5, rely=0.65, relwidth=0.3, relheight=0.2, anchor='n')
 
 
     def upgma(self,master):
@@ -77,7 +71,6 @@ class UpgmaWindow(tk.Toplevel):
             tk.messagebox.showerror("ERROR", "Provide cost value for all possible states!")
             return
 
-        newick = ''
 
         upgma = UPGMA(master.sequences)
         self.connections,self.seq_hash,newick = upgma.create_upgma(float(indent_cost),float(substitution_cost),float(match_cost))
@@ -92,6 +85,11 @@ class UpgmaWindow(tk.Toplevel):
 
 
     def show_dendrogram(self,master):
+        """
+        Creates dendrogram and opens new window that contains the visualization.
+        :param master: master window
+        :return:
+        """
         if self.connections is None or self.seq_hash is None:
             tk.messagebox.showerror("ERROR!","You must first create upgma dendrogram")
             return
@@ -119,14 +117,10 @@ class UpgmaWindow(tk.Toplevel):
             seen += flatten([elem for elem in flatten(connection[1])])
 
         label_map = {i: {} for i in range(len(master.sequences))}
-        # for i in range(len(master.sequences)):
-        #     label_map[i] = {'label': master.sequences[i].get_sequence_name().split('.')[0], 'xpos': i, 'ypos': 0}
 
-        print('POSITION HASH: ',position_hash)
 
         seen_location = []
         for i in range(len(locations)):
-            print('loca: ',locations[i])
             seq_id = locations[i]
             for seqi in seq_id:
                 if seqi not in seen_location:
@@ -136,9 +130,6 @@ class UpgmaWindow(tk.Toplevel):
             label_map[i] = {'label': master.sequences[seen_location[i]].get_sequence_name().split('.')[0], 'xpos': i, 'ypos': 0}
 
 
-        print('locations ', locations)
-        print('label_map ', label_map)
-
         plt.close('all')
         fig, ax = plt.subplots()
 
@@ -146,28 +137,22 @@ class UpgmaWindow(tk.Toplevel):
 
             loc0 ,loc1 = position_hash[loc0],position_hash[loc1]
 
-            print('step {0}:\t connecting ({1},{2}) at level {3}'.format(i, loc0, loc1, new_level))
-
             x0, y0 = label_map[loc0]['xpos'], label_map[loc0]['ypos']
             x1, y1 = label_map[loc1]['xpos'], label_map[loc1]['ypos']
 
-            print('\t points are: {0}:({2},{3}) and {1}:({4},{5})'.format(loc0, loc1, x0, y0, x1, y1))
 
             p, c = self._mk_fork(x0, x1, y0, y1, new_level)
 
             ax.plot(*p)
             ax.scatter(*c)
-            print('\t connector is at:{0}'.format(c))
 
             label_map[loc0]['xpos'] = c[0]
             label_map[loc0]['ypos'] = c[1]
             label_map[loc0]['label'] = '{0}/{1}'.format(label_map[loc0]['label'], label_map[loc1]['label'])
-            print('\t updating label_map[{0}]:{1}'.format(loc0, label_map[loc0]))
 
             ax.text(*c, label_map[loc0]['label'])
 
         _xticks = np.arange(0, 6, 1)
-        # _xticklabels = [*[seq.get_sequence_name().split('.')[0] for seq in master.sequences]]
         _xticklabels = [*[master.sequences[i].get_sequence_name().split('.')[0] for i in seen_location]]
 
         ax.set_xticks(_xticks)
